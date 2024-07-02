@@ -14,8 +14,19 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     books.push(book);
     return book;
   }
+
   update(id: number, data: IBookBase): IBook | null {
-    throw new Error('Method not implemented');
+    const index = books.findIndex((b) => b.id === id);
+    if (index === -1) {
+      return null; //
+    }
+    const updatedBook: IBook = {
+      id: books[index].id,
+      ...data,
+      availableNumOfCopies: data.totalNumOfCopies,
+    };
+    books[index] = updatedBook;
+    return updatedBook;
   }
   delete(id: number): IBook | null {
     throw new Error('Method not implemented');
