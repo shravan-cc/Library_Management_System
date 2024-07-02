@@ -21,11 +21,11 @@ export class LibraryInteractor implements IInteractor {
       const op = await readChar(menu.serialize());
       const menuItem = menu.getItem(op);
       if (menuItem) {
-        console.log(`Choice: \n\t${menuItem.key}.\t${menuItem.label}`);
+        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
       }
       switch (op.toLowerCase()) {
         case '1':
-          this.bookInteractor.showMenu();
+          await this.bookInteractor.showMenu();
           break;
         case '2':
           this.memberInteractor.showMenu();

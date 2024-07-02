@@ -1,3 +1,4 @@
+import { I } from 'vitest/dist/reporters-yx5ZTtEV';
 import { readChar, readLine } from '../core/input.utils';
 import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
@@ -104,6 +105,7 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
 async function addBook(repo: BookRepository) {
   const book: IBookBase = await getBookInput();
   const createdBook = repo.create(book);
+  console.log('Book added successfully!\n');
   console.log('Book added successfully!\n');
   console.table(createdBook);
 }
