@@ -1,29 +1,32 @@
 import readline from 'node:readline';
-export const readChar = (question: string): Promise<string> => {
-  console.log(question);
-  return new Promise((resolve) => {
-    process.stdin.setRawMode(true);
-    process.stdin.setEncoding('utf8');
-    const onData = async (key: Buffer) => {
-      const char = key.toString('utf-8');
-      process.stdin.setRawMode(false);
-      resolve(char);
-    };
 
-    process.stdin.once('data', onData);
+readline.emitKeypressEvents(process.stdin);
+
+if (process.stdin.setRawMode !== null) {
+  process.stdin.setRawMode(true);
+}
+
+const memory = new Map<string, number>();
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+export const readLine = (question: string): Promise<string> => {
+  rl.write(null, { ctrl: true, name: 'u' });
+  return new Promise((resolve) => {
+    rl.question(question, (input: string) => {
+      resolve(input);
+    });
   });
 };
 
-export const readLine = (question: string): Promise<string> => {
+export const readChar = (question: string): Promise<string> => {
+  console.log(question);
   return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
+    process.stdin.once('keypress', (str) => {
+      resolve(str);
     });
   });
 };
