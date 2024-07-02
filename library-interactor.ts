@@ -3,6 +3,7 @@ import { IInteractor } from './core/interactor';
 import { BookRepository } from './article-management/book.repository';
 import { BookInteractor } from './article-management/book.interactor';
 import { Menu } from './core/menu';
+import { MemberInteractor } from './member-management/member.interactor';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -14,16 +15,20 @@ const menu = new Menu([
 
 export class LibraryInteractor implements IInteractor {
   private readonly bookInteractor = new BookInteractor();
+  private readonly memberInteractor = new MemberInteractor();
   async showMenu(): Promise<void> {
     while (true) {
       const op = await readChar(menu.serialize());
       const menuItem = menu.getItem(op);
       if (menuItem) {
-        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
+        console.log(`Choice: \n\t${menuItem.key}.\t${menuItem.label}`);
       }
       switch (op.toLowerCase()) {
         case '1':
-          await this.bookInteractor.showMenu();
+          this.bookInteractor.showMenu();
+          break;
+        case '2':
+          this.memberInteractor.showMenu();
           break;
         case '5':
           process.exit(0);
