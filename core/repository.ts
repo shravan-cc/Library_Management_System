@@ -1,11 +1,11 @@
-import { IPageRequest, IPagedResponse } from './pagination';
+import { IPageRequest, IPagedResponse } from './pagination.response';
 
 export interface IRepository<
   MutationModel,
   CompleteModel extends MutationModel
 > {
-  create(dat: MutationModel): CompleteModel;
-  update(id: number, dat: MutationModel): CompleteModel | null;
+  create(data: MutationModel): CompleteModel;
+  update(id: number, data: MutationModel): CompleteModel | null;
   delete(id: number): CompleteModel | null;
   getById(id: number): CompleteModel | null;
   list(params: IPageRequest): IPagedResponse<CompleteModel>;
