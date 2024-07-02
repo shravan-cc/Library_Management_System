@@ -17,22 +17,24 @@ export class LibraryInteractor implements IInteractor {
   private readonly bookInteractor = new BookInteractor();
   private readonly memberInteractor = new MemberInteractor();
   async showMenu(): Promise<void> {
-    const op = await readChar(menu.serialize());
-    const menuItem = menu.getItem(op);
-    if (menuItem) {
-      console.log(`Choice: \n\t${menuItem.key}.\t${menuItem.label}`);
-    }
-    switch (op.toLowerCase()) {
-      case '1':
-        this.bookInteractor.showMenu();
-        break;
-      case '2':
-        this.memberInteractor.showMenu();
-        break;
-      case '5':
-        process.exit(0);
-      default:
-        console.log('Invalid choice!');
+    while (true) {
+      const op = await readChar(menu.serialize());
+      const menuItem = menu.getItem(op);
+      if (menuItem) {
+        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
+      }
+      switch (op.toLowerCase()) {
+        case '1':
+          await this.bookInteractor.showMenu();
+          break;
+        case '2':
+          this.memberInteractor.showMenu();
+          break;
+        case '5':
+          process.exit(0);
+        default:
+          console.log('Invalid choice!');
+      }
     }
   }
 }
