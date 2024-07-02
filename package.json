@@ -1,0 +1,17 @@
+{
+  "name": "library_management_system",
+  "version": "1.0.0",
+  "description": "Efficiently manage book inventories, member information, and borrowing transactions with ease.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}
