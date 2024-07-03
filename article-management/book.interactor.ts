@@ -1,4 +1,3 @@
-import { I } from 'vitest/dist/reporters-yx5ZTtEV';
 import { readChar, readLine } from '../core/input.utils';
 import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
