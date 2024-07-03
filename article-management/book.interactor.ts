@@ -33,13 +33,14 @@ export class BookInteractor implements IInteractor {
           console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
-          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
+          await searchBook(this.repo);
+          //console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '4':
-          // TODO: delete book
+          await deleteBook(this.repo);
           break;
         case '5':
-          // TODO: display list
+          displayBooks(this.repo);
           break;
         case '6':
           loop = false;
@@ -129,4 +130,25 @@ async function editBook(repo: BookRepository) {
   } else {
     console.log('Failed to update book. Please try again.');
   }
+}
+
+async function deleteBook(repo: BookRepository) {
+  const id = +(await readLine('Enter the ID of the book to delete: '));
+  const deletedBook = repo.delete(id);
+  if (deletedBook) {
+    console.log('Deleted Book:', deletedBook);
+  } else {
+    console.log('No books with given id');
+  }
+}
+
+function displayBooks(repo: BookRepository) {
+  console.table(repo.list({ limit: 100, offset: 0 }).items);
+}
+
+async function searchBook(repo: BookRepository) {
+  const search = await readLine(
+    'Enter the Title/isbnNO of the book which you want to search: '
+  );
+  console.table(repo.list({ search, limit: 100, offset: 0 }).items);
 }
