@@ -138,12 +138,22 @@ async function deleteBook(repo: BookRepository) {
 }
 
 function displayBooks(repo: BookRepository) {
-  console.table(repo.list({ limit: 100, offset: 0 }).items);
+  const books = repo.list({ limit: 100, offset: 0 }).items;
+  if (books.length === 0) {
+    console.log('Book not found');
+  } else {
+    console.table(books);
+  }
 }
 
 async function searchBook(repo: BookRepository) {
   const search = await readLine(
     'Enter the Title/isbnNO of the book which you want to search: '
   );
-  console.table(repo.list({ search, limit: 100, offset: 0 }).items);
+  const books = repo.list({ search, limit: 100, offset: 0 }).items;
+  if (books.length === 0) {
+    console.log('Book not found');
+  } else {
+    console.table(books);
+  }
 }

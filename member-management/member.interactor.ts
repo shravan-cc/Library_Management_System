@@ -32,11 +32,19 @@ export class MemberInteractor implements IInteractor {
           console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
-          //TODO : add member flow
+          await searchMember(this.repo);
           break;
         case '4':
           await deleteMember(this.repo);
           break;
+        case '5':
+          displayMembers(this.repo);
+          break;
+        case '6':
+          loop = false;
+          break;
+        default:
+          console.log('Invalid Choice!!');
       }
     }
   }
@@ -89,6 +97,7 @@ async function deleteMember(repo: MemberRepository) {
   }
 }
 
+
 async function editMember(repo: MemberRepository) {
   const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
   const existingMember = repo.getById(id);
@@ -109,5 +118,24 @@ async function editMember(repo: MemberRepository) {
     console.table(updatedMember);
   } else {
     console.log('Failed to update Member. Please try again.');
+    
+function displayMembers(repo: MemberRepository) {
+  const members = repo.list({ limit: 100, offset: 0 }).items;
+  if (members.length === 0) {
+    console.log('Member not found');
+  } else {
+    console.table(members);
+  }
+}
+async function searchMember(repo: MemberRepository) {
+  const search = await readLine(
+    'Enter the First Name/Last Name of the person whom you want to search: '
+  );
+  const members = repo.list({ search, limit: 100, offset: 0 }).items;
+  if (members.length === 0) {
+    console.log('Member not found');
+  } else {
+    console.table(members);
+
   }
 }
