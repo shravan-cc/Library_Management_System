@@ -33,7 +33,6 @@ export class BookInteractor implements IInteractor {
           console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
-
           await searchBook(this.repo);
           //console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
@@ -134,6 +133,7 @@ async function editBook(repo: BookRepository) {
   }
 }
 
+
 async function deleteBook(repo: BookRepository) {
   const id = +(await readLine('Enter the ID of the book to delete: '));
   const deletedBook = repo.delete(id);
@@ -154,4 +154,5 @@ async function searchBook(repo: BookRepository) {
   );
   console.table(repo.list({ search, limit: 100, offset: 0 }).items);
 }
+
 

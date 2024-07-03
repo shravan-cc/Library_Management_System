@@ -1,6 +1,5 @@
 import { IInteractor } from "../core/interactor";
 import { MemberRepository } from "./member.repository";
-
 import { readChar ,readLine} from "../core/input.utils";
 import { Menu } from '../core/menu';
 import { IMemberBase } from "./models/member.model";
