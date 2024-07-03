@@ -13,6 +13,7 @@ const invalidMemberBaseData = {
   lastName: 'Doe',
   phone: '1234567890', // Invalid phone type
   address:'mangalore'
+
 };
 
 const validMemberData = {
