@@ -18,17 +18,13 @@ export class LibraryInteractor implements IInteractor {
   private readonly memberInteractor = new MemberInteractor();
   async showMenu(): Promise<void> {
     while (true) {
-      const op = await readChar(menu.serialize());
-      const menuItem = menu.getItem(op);
-      if (menuItem) {
-        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
-      }
+      const op = await menu.show();
       switch (op.toLowerCase()) {
         case '1':
           await this.bookInteractor.showMenu();
           break;
         case '2':
-          await this.memberInteractor.showMenu();
+          this.memberInteractor.showMenu();
           break;
         case '5':
           process.exit(0);
