@@ -16,8 +16,7 @@ export const memberBaseSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   phone: z.number(),
-  membershipDate: z.date(),
-  booksIssued: z.array(z.string()),
+  address: z.string(),
 });
 
 export const memberSchema = memberBaseSchema.extend({
