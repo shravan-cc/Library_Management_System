@@ -1,3 +1,4 @@
+
 import { IMember, IMemberBase } from './models/member.model';
 import { IRepository } from '../core/repository';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
@@ -64,3 +65,4 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     throw new Error('Method not implemented.');
   }
 }
+
