@@ -13,7 +13,7 @@ export const readLine = (question: string): Promise<string> => {
 };
 
 export const readChar = (question: string): Promise<string> => {
-  process.stdout.write(question);
+  process.stdout.write(`${question}\n`);
   return new Promise((resolve) => {
     emitKeypressEvents(process.stdin);
     process.stdin.setRawMode(true);

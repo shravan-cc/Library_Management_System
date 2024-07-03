@@ -28,7 +28,8 @@ export class MemberInteractor implements IInteractor {
 
           break;
         case '2':
-          // TODO: add member flow
+          await editMember(this.repo);
+          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
           await searchMember(this.repo);
@@ -95,6 +96,29 @@ async function deleteMember(repo: MemberRepository) {
     console.log('No members with given id');
   }
 }
+
+
+async function editMember(repo: MemberRepository) {
+  const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
+  const existingMember = repo.getById(id);
+
+  if (!existingMember) {
+    console.log('Member not Found');
+    return;
+  }
+
+  console.log('Existing book details:');
+  console.table(existingMember);
+
+  const updatedData = await getMemberInput(existingMember);
+  const updatedMember = repo.update(id, updatedData);
+
+  if (updatedMember) {
+    console.log('Member updated successfully..\n');
+    console.table(updatedMember);
+  } else {
+    console.log('Failed to update Member. Please try again.');
+    
 function displayMembers(repo: MemberRepository) {
   const members = repo.list({ limit: 100, offset: 0 }).items;
   if (members.length === 0) {
@@ -112,5 +136,6 @@ async function searchMember(repo: MemberRepository) {
     console.log('Member not found');
   } else {
     console.table(members);
+
   }
 }

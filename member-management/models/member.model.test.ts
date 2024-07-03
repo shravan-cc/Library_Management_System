@@ -5,16 +5,14 @@ const validMemberBaseData = {
   firstName: 'John',
   lastName: 'Doe',
   phone: 1234567890,
-  membershipDate: new Date('2023-01-01'),
-  booksIssued: ['Book1', 'Book2'],
+  address: 'mangalore',
 };
 
 const invalidMemberBaseData = {
   firstName: 'John',
   lastName: 'Doe',
   phone: '1234567890', // Invalid phone type
-  membershipDate: '2023-01-01', // Invalid date type
-  booksIssued: ['Book1', 'Book2'],
+  address:'mangalore'
 };
 
 const validMemberData = {
