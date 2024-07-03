@@ -1,3 +1,5 @@
+import { readChar } from './input.utils';
+
 export interface IMenuItem {
   key: string;
   label: string;
@@ -20,5 +22,14 @@ export class Menu {
 
   getItem(key: string): IMenuItem | null {
     return this.items.find((i) => i.key === key) || null;
+  }
+
+  async show() {
+    const op = await readChar(this.serialize());
+    const menuItem = this.getItem(op);
+    if (menuItem) {
+      console.log(`\nChoice: ${menuItem.key}.\t${menuItem.label}\n`);
+    }
+    return op;
   }
 }

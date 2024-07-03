@@ -18,11 +18,7 @@ export class BookInteractor implements IInteractor {
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {
-      const op = await readChar(menu.serialize());
-      const menuItem = menu.getItem(op);
-      if (menuItem) {
-        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
-      }
+      const op = await menu.show();
       switch (op.toLowerCase()) {
         case '1':
           await addBook(this.repo);
@@ -34,14 +30,12 @@ export class BookInteractor implements IInteractor {
           break;
         case '3':
           await searchBook(this.repo);
-          //console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '4':
           await deleteBook(this.repo);
           break;
         case '5':
           displayBooks(this.repo);
-
           break;
         case '6':
           loop = false;
@@ -133,7 +127,6 @@ async function editBook(repo: BookRepository) {
   }
 }
 
-
 async function deleteBook(repo: BookRepository) {
   const id = +(await readLine('Enter the ID of the book to delete: '));
   const deletedBook = repo.delete(id);
@@ -154,5 +147,3 @@ async function searchBook(repo: BookRepository) {
   );
   console.table(repo.list({ search, limit: 100, offset: 0 }).items);
 }
-
-

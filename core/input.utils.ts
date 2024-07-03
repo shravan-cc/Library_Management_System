@@ -1,32 +1,34 @@
-import readline from 'node:readline';
-
-readline.emitKeypressEvents(process.stdin);
-
-if (process.stdin.setRawMode !== null) {
-  process.stdin.setRawMode(true);
-}
-
-const memory = new Map<string, number>();
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+import { emitKeypressEvents } from 'node:readline';
 
 export const readLine = (question: string): Promise<string> => {
-  rl.write(null, { ctrl: true, name: 'u' });
   return new Promise((resolve) => {
-    rl.question(question, (input: string) => {
-      resolve(input);
-    });
+    process.stdout.write(question);
+    const onData = async (key: Buffer) => {
+      process.removeListener('data', onData);
+      const input = key.toString('utf-8');
+      resolve(input.trim());
+    };
+    process.stdin.addListener('data', onData);
   });
 };
 
 export const readChar = (question: string): Promise<string> => {
-  console.log(question);
+  process.stdout.write(question);
   return new Promise((resolve) => {
-    process.stdin.once('keypress', (str) => {
-      resolve(str);
-    });
+    emitKeypressEvents(process.stdin);
+    process.stdin.setRawMode(true);
+    process.stdin.setEncoding('utf8');
+
+    const onData = async (key: Buffer) => {
+      process.stdin.setRawMode(false);
+      process.stdin.removeListener('data', onData);
+      const char = key.toString('utf-8');
+      if (char.charCodeAt(0) === 3) {
+        process.exit(0);
+      }
+      resolve(char);
+    };
+
+    process.stdin.addListener('data', onData);
   });
 };
