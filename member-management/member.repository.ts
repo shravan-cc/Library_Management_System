@@ -1,4 +1,3 @@
-
 import { IMember, IMemberBase } from './models/member.model';
 import { IRepository } from '../core/repository';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
@@ -31,9 +30,15 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
   } | null {
     throw new Error('Method not implemented.');
   }
-  delete(
-    id: number
-  ): {
+  delete(id: number): IMember | null {
+    const index = members.findIndex((member) => member.memberId === id);
+    if (index !== -1) {
+      const deletedMember = members.splice(index, 1)[0];
+      return deletedMember;
+    }
+    return null;
+  }
+  getById(id: number): {
     firstName: string;
     lastName: string;
     phone: number;
@@ -42,20 +47,7 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
   } | null {
     throw new Error('Method not implemented.');
   }
-  getById(
-    id: number
-  ): {
-    firstName: string;
-    lastName: string;
-    phone: number;
-    address: string;
-    memberId: number;
-  } | null {
-    throw new Error('Method not implemented.');
-  }
-  list(
-    params: IPageRequest
-  ): IPagedResponse<{
+  list(params: IPageRequest): IPagedResponse<{
     firstName: string;
     lastName: string;
     phone: number;
@@ -65,4 +57,3 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     throw new Error('Method not implemented.');
   }
 }
-

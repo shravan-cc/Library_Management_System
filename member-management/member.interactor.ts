@@ -1,8 +1,8 @@
-import { IInteractor } from "../core/interactor";
-import { MemberRepository } from "./member.repository";
-import { readChar ,readLine} from "../core/input.utils";
+import { IInteractor } from '../core/interactor';
+import { MemberRepository } from './member.repository';
+import { readChar, readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
-import { IMemberBase } from "./models/member.model";
+import { IMemberBase } from './models/member.model';
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
@@ -16,7 +16,7 @@ export class MemberInteractor implements IInteractor {
   private repo = new MemberRepository();
   async showMenu(): Promise<void> {
     let loop: boolean = true;
-    while (loop) { 
+    while (loop) {
       const op = await readChar(menu.serialize());
       const menuItem = menu.getItem(op);
       if (menuItem) {
@@ -25,7 +25,7 @@ export class MemberInteractor implements IInteractor {
       switch (op.toLowerCase()) {
         case '1':
           await addMember(this.repo);
-          
+
           break;
         case '2':
           // TODO: add member flow
@@ -34,11 +34,10 @@ export class MemberInteractor implements IInteractor {
           //TODO : add member flow
           break;
         case '4':
-          // TODO: add member flow
+          await deleteMember(this.repo);
           break;
       }
     }
-    
   }
 }
 
@@ -78,4 +77,13 @@ async function addMember(repo: MemberRepository) {
   const createdMember = repo.create(member);
   console.log('Member Added successfully..\n');
   console.table(createdMember);
+}
+async function deleteMember(repo: MemberRepository) {
+  const id = +(await readLine('Enter the ID of the book to delete: '));
+  const deletedMember = repo.delete(id);
+  if (deletedMember) {
+    console.log('Deleted Member:', deletedMember);
+  } else {
+    console.log('No members with given id');
+  }
 }
