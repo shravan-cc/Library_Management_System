@@ -47,13 +47,22 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
   } | null {
     throw new Error('Method not implemented.');
   }
-  list(params: IPageRequest): IPagedResponse<{
-    firstName: string;
-    lastName: string;
-    phone: number;
-    address: string;
-    memberId: number;
-  }> {
-    throw new Error('Method not implemented.');
+  list(params: IPageRequest): IPagedResponse<IMember> {
+    const search = params.search?.toLowerCase();
+    const filteredMembers = search
+      ? members.filter(
+          (b) =>
+            b.firstName.toLowerCase().includes(search) ||
+            b.lastName.toLowerCase().includes(search)
+        )
+      : members;
+    return {
+      items: filteredMembers.slice(params.offset, params.offset + params.limit),
+      pagination: {
+        offset: params.offset,
+        limit: params.limit,
+        total: filteredMembers.length,
+      },
+    };
   }
 }
