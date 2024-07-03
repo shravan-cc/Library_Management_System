@@ -97,7 +97,6 @@ async function deleteMember(repo: MemberRepository) {
   }
 }
 
-
 async function editMember(repo: MemberRepository) {
   const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
   const existingMember = repo.getById(id);
@@ -118,7 +117,9 @@ async function editMember(repo: MemberRepository) {
     console.table(updatedMember);
   } else {
     console.log('Failed to update Member. Please try again.');
-    
+  }
+}
+
 function displayMembers(repo: MemberRepository) {
   const members = repo.list({ limit: 100, offset: 0 }).items;
   if (members.length === 0) {
@@ -136,6 +137,5 @@ async function searchMember(repo: MemberRepository) {
     console.log('Member not found');
   } else {
     console.table(members);
-
   }
 }
