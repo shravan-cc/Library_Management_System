@@ -15,20 +15,18 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
   }
   update(
     id: number,
-    data: {
-      firstName: string;
-      lastName: string;
-      phone: number;
-      address: string;
-    }
-  ): {
-    firstName: string;
-    lastName: string;
-    phone: number;
-    address: string;
-    memberId: number;
-  } | null {
-    throw new Error('Method not implemented.');
+    data: IMemberBase
+  ): IMember | null {
+      const index = members.findIndex((m) => m.memberId === id);
+      if (index === -1) {
+          return null;
+      }
+      const updatedMember: IMember = {
+          memberId: members[index].memberId,
+          ...data,
+      }
+      members[index] = updatedMember;
+      return updatedMember;
   }
   delete(id: number): IMember | null {
     const index = members.findIndex((member) => member.memberId === id);
@@ -38,14 +36,9 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     }
     return null;
   }
-  getById(id: number): {
-    firstName: string;
-    lastName: string;
-    phone: number;
-    address: string;
-    memberId: number;
-  } | null {
-    throw new Error('Method not implemented.');
+  getById(id: number):IMember |null {
+    const member = members.find((m) => m.memberId === id)
+    return member || null;
   }
   list(params: IPageRequest): IPagedResponse<{
     firstName: string;
