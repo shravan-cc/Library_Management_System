@@ -17,13 +17,21 @@ export class LibraryInteractor implements IInteractor {
   private readonly bookInteractor = new BookInteractor();
   private readonly memberInteractor = new MemberInteractor();
   async showMenu(): Promise<void> {
+    console.log('\n|---------------------------------------------------------------------------|');
+    console.log('*\t\t\twelcome to library management\t\t\t    *');
+    console.log(
+      '|---------------------------------------------------------------------------|'
+    );
     while (true) {
+      console.log('\n\t\tMain Menu')
       const op = await menu.show();
       switch (op.toLowerCase()) {
         case '1':
+          console.log('\t\tBook Menu\n')
           await this.bookInteractor.showMenu();
           break;
         case '2':
+          console.log('\t\tMember Menu\n');
           await this.memberInteractor.showMenu();
           break;
         case '5':
