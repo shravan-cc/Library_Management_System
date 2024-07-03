@@ -3,6 +3,21 @@ import { MemberRepository } from './member.repository';
 import { readChar, readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase } from './models/member.model';
+import { z } from 'zod';
+
+export const firstNameSchema = z
+  .string()
+  .min(1, 'First Name is required')
+  .regex(/^[a-zA-Z]+$/, 'First Name must be alphabetic');
+export const lastNameSchema = z
+  .string()
+  .min(1, 'Last Name is required')
+  .regex(/^[a-zA-Z]+$/, 'Last Name must be alphabetic');
+export const phoneSchema = z
+  .string()
+  .min(10, 'Phone Number must be at least 10 digits')
+  .regex(/^\d+$/, 'Phone Number must be numeric');
+export const addressSchema = z.string().min(5, 'Address is required');
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
@@ -50,29 +65,49 @@ export class MemberInteractor implements IInteractor {
   }
 }
 
+async function promptAndValidate<T>(question: string, schema: z.ZodSchema<T>) {
+  let input;
+  do {
+    input = await readLine(question);
+    try {
+      return schema.parse(input);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        console.log('Validation error:', e.errors[0].message);
+      } else {
+        console.log('An unknown error occurred:', e);
+      }
+    }
+  } while (true);
+}
+
 async function getMemberInput(
   existingData?: IMemberBase
 ): Promise<IMemberBase> {
-  const firstName = await readLine(
+  const firstName = await promptAndValidate(
     `Please enter First Name${
       existingData?.firstName ? ` (${existingData.firstName})` : ''
-    }: `
+    }: `,
+    firstNameSchema
   );
-  const lastName = await readLine(
+  const lastName = await promptAndValidate(
     `Please enter Last Name${
       existingData?.lastName ? ` (${existingData.lastName})` : ''
-    }: `
+    }: `,
+    lastNameSchema
   );
-  const phone = await readLine(
+  const phone = await promptAndValidate(
     `Please enter Phone Number${
       existingData?.phone ? ` (${existingData.phone})` : ''
-    }: `
+    }: `,
+    phoneSchema
   );
 
-  const address = await readLine(
+  const address = await promptAndValidate(
     `Please provide your address${
       existingData?.address ? ` (${existingData.address})` : ''
-    }: `
+    }: `,
+    addressSchema
   );
   return {
     firstName: firstName || existingData?.firstName || '',

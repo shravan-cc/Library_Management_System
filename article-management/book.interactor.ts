@@ -3,6 +3,33 @@ import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
 import { IBookBase } from './models/book.model';
 import { Menu } from '../core/menu';
+import { z } from 'zod';
+
+export const titleSchema = z
+  .string()
+  .min(5, 'Title is required')
+  .regex(/^[a-zA-Z]+$/, 'Title must be alphabetic');
+export const authorSchema = z
+  .string()
+  .min(5, 'Author is required')
+  .regex(/^[a-zA-Z]+$/, 'Author must be alphabetic');
+export const publisherSchema = z
+  .string()
+  .min(5, 'Publisher is required')
+  .regex(/^[a-zA-Z]+$/, 'Publisher must be alphabetic');
+export const genreSchema = z
+  .string()
+  .min(3, 'Genre is required')
+  .regex(/^[a-zA-Z]+$/, 'Genre must be alphabetic');
+export const isbnNoSchema = z.string().min(5, 'ISBN Number is required');
+export const numOfPagesSchema = z
+  .number()
+  .int()
+  .positive('Number of pages must be a positive integer');
+export const totalNumOfCopiesSchema = z
+  .number()
+  .int()
+  .positive('Total number of copies must be a positive integer');
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -47,43 +74,73 @@ export class BookInteractor implements IInteractor {
   }
 }
 
+async function promptAndValidate<T>(
+  question: string,
+  schema: z.ZodSchema<T>,
+  isNumeric = false
+) {
+  let input;
+  do {
+    input = await readLine(question);
+    try {
+      const value = isNumeric ? Number(input) : input;
+      return schema.parse(value);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        console.log('Validation error:', e.errors[0].message);
+      } else {
+        console.log('An unknown error occurred:', e);
+      }
+    }
+  } while (true);
+}
+
 async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
-  const title = await readLine(
+  const title = await promptAndValidate(
     `Please enter title${
       existingData?.title ? ` (${existingData.title})` : ''
-    }: `
+    }: `,
+    titleSchema
   );
-  const author = await readLine(
+  const author = await promptAndValidate(
     `Please enter author${
       existingData?.author ? ` (${existingData.author})` : ''
-    }: `
+    }: `,
+    authorSchema
   );
-  const publisher = await readLine(
+  const publisher = await promptAndValidate(
     `Please enter publisher${
       existingData?.publisher ? ` (${existingData.publisher})` : ''
-    }: `
+    }: `,
+    publisherSchema
   );
-  const genre = await readLine(
+  const genre = await promptAndValidate(
     `Please enter genre${
       existingData?.genre ? ` (${existingData.genre})` : ''
-    }: `
+    }: `,
+    genreSchema
   );
-  const isbnNo = await readLine(
+  const isbnNo = await promptAndValidate(
     `Please enter ISBN Number${
       existingData?.isbnNo ? ` (${existingData.isbnNo})` : ''
-    }: `
+    }: `,
+    isbnNoSchema
   );
-  const numOfPages = await readLine(
+  const numOfPages = await promptAndValidate(
     `Please enter total num of pages${
       existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
-    }: `
+    }: `,
+    numOfPagesSchema,
+    true
   );
-  const totalNumOfCopies = await readLine(
+  const totalNumOfCopies = await promptAndValidate(
     `Please enter the total num of copies${
       existingData?.totalNumOfCopies
         ? ` (${existingData.totalNumOfCopies})`
         : ''
-    }: `
+    }: `,
+    totalNumOfCopiesSchema,
+    true
   );
 
   return {
