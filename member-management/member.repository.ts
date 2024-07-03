@@ -13,6 +13,7 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
         members.push(member)
         return member;
     }
+
     update(id: number, data: { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; }): { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; memberId: number; } | null {
         throw new Error("Method not implemented.");
     }
@@ -26,4 +27,5 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
         throw new Error("Method not implemented.");
     }
     
+
 }
