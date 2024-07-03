@@ -33,6 +33,7 @@ export class BookInteractor implements IInteractor {
           console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
+
           await searchBook(this.repo);
           //console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
@@ -41,6 +42,7 @@ export class BookInteractor implements IInteractor {
           break;
         case '5':
           displayBooks(this.repo);
+
           break;
         case '6':
           loop = false;
@@ -106,7 +108,6 @@ async function addBook(repo: BookRepository) {
   const book: IBookBase = await getBookInput();
   const createdBook = repo.create(book);
   console.log('Book added successfully!\n');
-  console.log('Book added successfully!\n');
   console.table(createdBook);
 }
 
@@ -153,3 +154,4 @@ async function searchBook(repo: BookRepository) {
   );
   console.table(repo.list({ search, limit: 100, offset: 0 }).items);
 }
+

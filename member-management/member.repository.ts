@@ -13,16 +13,19 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
         members.push(member)
         return member;
     }
-    update(id: number, data: { firstName: string; lastName: string; phone: number; membershipDate: Date; booksIssued: string[]; }): { firstName: string; lastName: string; phone: number; membershipDate: Date; booksIssued: string[]; memberId: number; } | null {
+
+    update(id: number, data: { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; }): { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; memberId: number; } | null {
         throw new Error("Method not implemented.");
     }
-    delete(id: number): { firstName: string; lastName: string; phone: number; membershipDate: Date; booksIssued: string[]; memberId: number; } | null {
+    delete(id: number): { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; memberId: number; } | null {
         throw new Error("Method not implemented.");
     }
-    getById(id: number): { firstName: string; lastName: string; phone: number; membershipDate: Date; booksIssued: string[]; memberId: number; } | null {
+    getById(id: number): { firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; memberId: number; } | null {
         throw new Error("Method not implemented.");
     }
-    list(params: IPageRequest): IPagedResponse<{ firstName: string; lastName: string; phone: number; membershipDate: Date; booksIssued: string[]; memberId: number; }> {
+    list(params: IPageRequest): IPagedResponse<{ firstName: string; lastName: string; phone: number; membershipDate: Date; address: string; memberId: number; }> {
         throw new Error("Method not implemented.");
-    } 
+    }
+    
+
 }

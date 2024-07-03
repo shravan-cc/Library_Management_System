@@ -28,7 +28,9 @@ export class LibraryInteractor implements IInteractor {
           await this.bookInteractor.showMenu();
           break;
         case '2':
-          this.memberInteractor.showMenu();
+
+          await this.memberInteractor.showMenu();
+
           break;
         case '5':
           process.exit(0);

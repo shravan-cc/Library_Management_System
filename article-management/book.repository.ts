@@ -29,12 +29,14 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     return updatedBook;
   }
   delete(id: number): IBook | null {
+
     const index = books.findIndex((book) => book.id === id);
     if (index !== -1) {
       const deletedBook: IBook = books.splice(index, 1)[0];
       return deletedBook;
     }
     return null;
+
   }
   getById(id: number): IBook | null {
     const book = books.find((b) => b.id === id);

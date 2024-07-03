@@ -16,8 +16,9 @@ export const memberBaseSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   phone: z.number(),
-  membershipDate: z.date(),
-  booksIssued: z.array(z.string()),
+
+  address: z.string(),
+
 });
 
 export const memberSchema = memberBaseSchema.extend({
@@ -25,4 +26,5 @@ export const memberSchema = memberBaseSchema.extend({
 });
 
 export type IMemberBase = z.infer<typeof memberBaseSchema>;
+
 export type IMember = z.infer<typeof memberSchema>;
