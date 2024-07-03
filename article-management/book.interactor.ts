@@ -7,21 +7,26 @@ import { z } from 'zod';
 
 export const titleSchema = z
   .string()
-  .min(5, 'Title is required')
-  .regex(/^[a-zA-Z]+$/, 'Title must be alphabetic');
+  .min(5, 'Title must be at least 5 characters long')
+  .regex(/^[a-zA-Z]+$/, 'Title must contain only alphabetic characters');
 export const authorSchema = z
   .string()
   .min(5, 'Author is required')
-  .regex(/^[a-zA-Z]+$/, 'Author must be alphabetic');
+  .regex(/^[a-zA-Z]+$/, 'Author name must contain only alphabetic characters');
 export const publisherSchema = z
   .string()
   .min(5, 'Publisher is required')
-  .regex(/^[a-zA-Z]+$/, 'Publisher must be alphabetic');
+  .regex(
+    /^[a-zA-Z]+$/,
+    'Publisher name must contain only alphabetic characters'
+  );
 export const genreSchema = z
   .string()
   .min(3, 'Genre is required')
-  .regex(/^[a-zA-Z]+$/, 'Genre must be alphabetic');
-export const isbnNoSchema = z.string().min(5, 'ISBN Number is required');
+  .regex(/^[a-zA-Z]+$/, 'Genre must contain only alphabetic characters');
+export const isbnNoSchema = z
+  .string()
+  .min(5, 'ISBN Number must be exactly 13 digits');
 export const numOfPagesSchema = z
   .number()
   .int()

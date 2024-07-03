@@ -8,16 +8,18 @@ import { z } from 'zod';
 export const firstNameSchema = z
   .string()
   .min(1, 'First Name is required')
-  .regex(/^[a-zA-Z]+$/, 'First Name must be alphabetic');
+  .regex(/^[a-zA-Z]+$/, 'First Name must contain only alphabetic characters');
 export const lastNameSchema = z
   .string()
   .min(1, 'Last Name is required')
-  .regex(/^[a-zA-Z]+$/, 'Last Name must be alphabetic');
+  .regex(/^[a-zA-Z]+$/, 'Last Name must contain only alphabetic characters');
 export const phoneSchema = z
   .string()
-  .min(10, 'Phone Number must be at least 10 digits')
-  .regex(/^\d+$/, 'Phone Number must be numeric');
-export const addressSchema = z.string().min(5, 'Address is required');
+  .length(10, 'Phone Number must be at least 10 digits')
+  .regex(/^\d+$/, 'Phone Number must contain only numeric digits');
+export const addressSchema = z
+  .string()
+  .min(5, 'Address must be at least 5 characters long');
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
