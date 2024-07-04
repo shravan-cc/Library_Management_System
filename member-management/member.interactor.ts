@@ -4,6 +4,7 @@ import { readChar, readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
+import { Database } from '../db/db';
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
@@ -14,7 +15,8 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  private repo = new MemberRepository();
+  constructor(private readonly db: Database) {}
+  private repo = new MemberRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {
@@ -26,7 +28,6 @@ export class MemberInteractor implements IInteractor {
           break;
         case '2':
           await editMember(this.repo);
-          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
           await searchMember(this.repo);
@@ -35,7 +36,7 @@ export class MemberInteractor implements IInteractor {
           await deleteMember(this.repo);
           break;
         case '5':
-          displayMembers(this.repo);
+          await displayMembers(this.repo);
           break;
         case '6':
           loop = false;
@@ -113,13 +114,13 @@ async function getMemberInput(
 }
 async function addMember(repo: MemberRepository) {
   const member: IMemberBase = await getMemberInput();
-  const createdMember = repo.create(member);
+  const createdMember = await repo.create(member);
   console.log('Member Added successfully..\n');
   console.table(createdMember);
 }
 async function deleteMember(repo: MemberRepository) {
   const id = +(await readLine('Enter the ID of the book to delete: '));
-  const deletedMember = repo.delete(id);
+  const deletedMember = await repo.delete(id);
   if (deletedMember) {
     console.log('Deleted Member:', deletedMember);
   } else {
@@ -129,7 +130,7 @@ async function deleteMember(repo: MemberRepository) {
 
 async function editMember(repo: MemberRepository) {
   const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
-  const existingMember = repo.getById(id);
+  const existingMember = await repo.getById(id);
 
   if (!existingMember) {
     console.log('Member not Found');
@@ -140,7 +141,7 @@ async function editMember(repo: MemberRepository) {
   console.table(existingMember);
 
   const updatedData = await getMemberInput(existingMember);
-  const updatedMember = repo.update(id, updatedData);
+  const updatedMember = await repo.update(id, updatedData);
 
   if (updatedMember) {
     console.log('Member updated successfully..\n');
@@ -150,8 +151,8 @@ async function editMember(repo: MemberRepository) {
   }
 }
 
-function displayMembers(repo: MemberRepository) {
-  const members = repo.list({ limit: 100, offset: 0 }).items;
+async function displayMembers(repo: MemberRepository) {
+  const members = (await repo.list({ limit: 100, offset: 0 })).items;
   if (members.length === 0) {
     console.log('Member not found');
   } else {
@@ -162,7 +163,7 @@ async function searchMember(repo: MemberRepository) {
   const search = await readLine(
     'Enter the First Name/Last Name of the person whom you want to search: '
   );
-  const members = repo.list({ search, limit: 100, offset: 0 }).items;
+  const members = (await repo.list({ search, limit: 100, offset: 0 })).items;
   if (members.length === 0) {
     console.log('Member not found');
   } else {
