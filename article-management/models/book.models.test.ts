@@ -32,9 +32,9 @@ const invalidBookData = {
   id: 'one', // Invalid id type
   availableNumOfCopies: -1, // Invalid availableNumOfCopies
 };
-test('', () => { 
-    expect(() => bookBaseSchema.parse(validBookData)).not.toThrow();
-})
-test('', () => {  
-    expect(() => bookSchema.parse(invalidBookData)).toThrow();
-})
+test('should not throw an error for valid book data', () => {
+  expect(() => bookBaseSchema.parse(validBookData)).not.toThrow();
+});
+test('should throw an error for invalid book data', () => {
+  expect(() => bookSchema.parse(invalidBookData)).toThrow();
+});
