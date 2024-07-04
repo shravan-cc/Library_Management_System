@@ -6,6 +6,13 @@ import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
 import { Database } from '../db/db';
 
+const searchSchema = z
+  .string()
+  .min(2, { message: 'Name must be at least 2 characters long' })
+  .regex(/^[a-zA-Z\s]+$/, {
+    message: 'Name must contain only alphabetic characters',
+  });
+
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
   { key: '2', label: 'Edit Member' },
@@ -56,10 +63,10 @@ async function promptForValidInput<T>(
   let input;
   do {
     input = await readLine(question);
-    if (!input && defaultValue != 'undefined') {
-      return defaultValue;
-    }
     try {
+      if (!input && defaultValue !== undefined) {
+        return defaultValue;
+      }
       return schema.parse(
         schema instanceof z.ZodNumber ? Number(input) : input
       );
@@ -81,21 +88,21 @@ async function getMemberInput(
       existingData?.firstName ? ` (${existingData.firstName})` : ''
     }: `,
     memberBaseSchema.shape.firstName,
-    existingData?.firstName ?? ''
+    existingData?.firstName
   );
   const lastName = await promptForValidInput(
     `Please enter Last Name${
       existingData?.lastName ? ` (${existingData.lastName})` : ''
     }: `,
     memberBaseSchema.shape.lastName,
-    existingData?.lastName ?? ''
+    existingData?.lastName
   );
   const phone = await promptForValidInput(
     `Please enter Phone Number${
       existingData?.phone ? ` (${existingData.phone})` : ''
     }: `,
     memberBaseSchema.shape.phone,
-    existingData?.phone ?? 0
+    existingData?.phone
   );
 
   const address = await promptForValidInput(
@@ -103,13 +110,13 @@ async function getMemberInput(
       existingData?.address ? ` (${existingData.address})` : ''
     }: `,
     memberBaseSchema.shape.address,
-    existingData?.address ?? ''
+    existingData?.address
   );
   return {
-    firstName: firstName,
-    lastName: lastName,
-    phone: phone,
-    address: address,
+    firstName: firstName || '',
+    lastName: lastName || '',
+    phone: phone || 0,
+    address: address || '',
   };
 }
 async function addMember(repo: MemberRepository) {
@@ -160,13 +167,54 @@ async function displayMembers(repo: MemberRepository) {
   }
 }
 async function searchMember(repo: MemberRepository) {
-  const search = await readLine(
-    'Enter the First Name/Last Name of the person whom you want to search: '
+  const search = await promptForValidInput(
+    'Enter the First Name/Last Name of the person whom you want to search: ',
+    searchSchema,
+    ''
   );
-  const members = (await repo.list({ search, limit: 100, offset: 0 })).items;
-  if (members.length === 0) {
-    console.log('Member not found');
-  } else {
-    console.table(members);
-  }
+  const limit: number = 1;
+  let currentPage: number = 0;
+  const loadData = async () => {
+    const members = await repo.list({
+      search: search || undefined,
+      limit: limit,
+      offset: currentPage * limit,
+    });
+    if (members.items.length > 0) {
+      console.log(`\n\n Current Page: ${currentPage + 1}`);
+      console.table(members.items);
+      const hasPreviousPage: boolean = currentPage > 0;
+      const hasNextPage: boolean =
+        members.pagination.offset + members.pagination.limit <
+        members.pagination.total;
+
+      if (hasPreviousPage) {
+        console.log('P:\tPrevious Page');
+      }
+      if (hasNextPage) {
+        console.log('N:Next Page');
+      }
+      if (hasPreviousPage || hasNextPage) {
+        console.log('Q:\tQuit');
+        const askChoice = async () => {
+          const op = await readLine('\nChoice: ');
+          console.log(op, '\n\n');
+          if (op === 'P' && hasPreviousPage) {
+            currentPage--;
+            await loadData();
+          } else if (op === 'N' && hasNextPage) {
+            currentPage++;
+            await loadData();
+          } else if (op !== 'Q') {
+            console.log('Invalid Choice:\n');
+            await askChoice();
+          }
+        };
+        await askChoice();
+      }
+    } else {
+      console.log('\n No Data To Show');
+    }
+  };
+  await loadData();
 }
