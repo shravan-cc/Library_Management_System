@@ -1,4 +1,4 @@
-import { readChar, readLine } from '../core/input.utils';
+import { readLine } from '../core/input.utils';
 import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
 import { IBookBase, bookBaseSchema } from './models/book.model';
@@ -141,16 +141,16 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
 async function addBook(repo: BookRepository) {
   const book: IBookBase = await getBookInput();
   const createdBook = await repo.create(book);
-  console.log('Book added successfully!\n');
+  console.log('\nBook added successfully!\n');
   console.table(createdBook);
 }
 
 async function editBook(repo: BookRepository) {
-  const id = +(await readLine('Enter the ID of the book to edit: '));
+  const id = +(await readLine('\nEnter the ID of the book to edit : '));
   const existingBook = await repo.getById(id);
 
   if (!existingBook) {
-    console.log('Book not found!');
+    console.log('\nBook not found. Please check the ID and try again.');
     return;
   }
 
@@ -161,7 +161,7 @@ async function editBook(repo: BookRepository) {
   const updatedBook = await repo.update(id, updatedData);
 
   if (updatedBook) {
-    console.log('Book updated successfully!\n');
+    console.log('\nBook updated successfully!\n');
     console.table(updatedBook);
   } else {
     console.log('Failed to update book. Please try again.');
@@ -169,72 +169,78 @@ async function editBook(repo: BookRepository) {
 }
 
 async function deleteBook(repo: BookRepository) {
-  const id = +(await readLine('Enter the ID of the book to delete: '));
+  const id = +(await readLine('\nEnter the ID of the book to delete : '));
   const deletedBook = await repo.delete(id);
   if (deletedBook) {
-    console.log('Deleted Book:', deletedBook);
+    console.log('\nBook successfully deleted :\n', deletedBook);
   } else {
-    console.log('No books with given id');
+    console.log('\nNo book found with the given ID.');
   }
 }
 
 async function displayBooks(repo: BookRepository) {
-  const books = (await repo.list({ limit: 100, offset: 0 })).items;
-  if (books.length === 0) {
-    console.log('Book not found');
-  } else {
-    console.table(books);
-  }
+  const pageSize: number = +(await readLine(
+    '\nEnter the maximum number of record you want to display :'
+  ));
+  let currentPage: number = 0;
+  await loadPage(repo, '', pageSize, currentPage);
 }
 
 async function searchBook(repo: BookRepository) {
   const search = await readLine(
-    'Enter the Title/isbnNO of the book which you want to search: ' || ''
+    '\nEnter the Title/isbnNO of the book which you want to search: ' || ''
   );
-  const pageSize = 1;
+  const pageSize = 5;
   let currentPage = 0;
-  const loadPage = async () => {
-    const result = await repo.list({
-      search: search || undefined,
-      offset: currentPage * pageSize,
-      limit: pageSize,
-    });
-    if (result.items.length > 0) {
-      const totalPages = Math.ceil(result.pagination.total / pageSize);
-      console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
-      console.table(result.items);
-      const hasPreviousPage = currentPage > 0;
 
-      const hasNextPage =
-        result.pagination.offset + result.pagination.limit <
-        result.pagination.total;
-      if (hasPreviousPage) {
-        console.log('\np previous page');
-      }
-      if (hasNextPage) {
-        console.log('\nn\tnext page');
-      }
-      if (hasPreviousPage || hasNextPage) {
-        console.log('\nq exit');
-        const askChoice = async () => {
-          const op = (await readLine('\nChoice :')).toLowerCase();
-          console.log(op, '\n\n');
-          if (op === 'n' && hasNextPage) {
-            currentPage++;
-            await loadPage();
-          } else if (op === 'p' && hasPreviousPage) {
-            currentPage--;
-            await loadPage();
-          } else if (op !== 'q') {
-            console.log('invalid choice..!!');
-            await askChoice();
-          }
-        };
-        await askChoice();
-      }
-    } else {
-      console.log('No Data To Show');
-    }
-  };
-  await loadPage();
+  await loadPage(repo, search, pageSize, currentPage);
 }
+
+const loadPage = async (
+  repo: BookRepository,
+  search: string,
+  pageSize: number,
+  currentPage: number
+) => {
+  const result = await repo.list({
+    search: search || undefined,
+    offset: currentPage * pageSize,
+    limit: pageSize,
+  });
+  if (result.items.length > 0) {
+    const totalPages = Math.ceil(result.pagination.total / pageSize);
+    console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
+    console.table(result.items);
+    const hasPreviousPage = currentPage > 0;
+
+    const hasNextPage =
+      result.pagination.offset + result.pagination.limit <
+      result.pagination.total;
+    if (hasPreviousPage) {
+      console.log('Press "p" to go to the previous page.');
+    }
+    if (hasNextPage) {
+      console.log('Press "n" to go to the next page.');
+    }
+    if (hasPreviousPage || hasNextPage) {
+      console.log('\nPress "q" to exit.\n');
+      const askChoice = async () => {
+        const op = (await readLine('\nChoice :')).toLowerCase();
+        console.log(op, '\n\n');
+        if (op === 'n' && hasNextPage) {
+          currentPage++;
+          await loadPage(repo, search, pageSize, currentPage);
+        } else if (op === 'p' && hasPreviousPage) {
+          currentPage--;
+          await loadPage(repo, search, pageSize, currentPage);
+        } else if (op !== 'q') {
+          console.log('\ninvalid choice..!!\n');
+          await askChoice();
+        }
+      };
+      await askChoice();
+    }
+  } else {
+    console.log('\nNo data available to display at the moment.');
+  }
+};

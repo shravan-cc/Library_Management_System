@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { readChar } from './input.utils';
 
 export interface IMenuItem {
@@ -11,13 +12,15 @@ export class Menu {
     this.items = items;
   }
   serialize(): string {
-    return this.items.reduce((str, item) => {
-      if (str) {
-        str += '\n';
-      }
-      str += `${item.key}.\t${item.label}`;
-      return str;
-    }, '');
+    return chalk.greenBright(
+      this.items.reduce((str, item) => {
+        if (str) {
+          str += '\n';
+        }
+        str += `${item.key}.\t${item.label}`;
+        return str;
+      }, '')
+    );
   }
 
   getItem(key: string): IMenuItem | null {
@@ -28,7 +31,7 @@ export class Menu {
     const op = await readChar(this.serialize());
     const menuItem = this.getItem(op);
     if (menuItem) {
-      console.log(`\nChoice: ${menuItem.key}.\t${menuItem.label}\n`);
+      console.log(chalk.greenBright(`\nChoice: ${menuItem.key}.\t${menuItem.label}\n`));
     }
     return op;
   }
