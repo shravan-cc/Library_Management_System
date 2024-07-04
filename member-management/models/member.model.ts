@@ -25,7 +25,7 @@ export const memberBaseSchema = z.object({
       message: 'Last must contain only alphabetic characters',
     }),
   phone: z.number().min(10, 'Phone Number must be at least 10 digits').int(),
-  address: z.string().min(5, 'Address must be at least 5 characters long'),
+  address: z.string().min(2, 'Address must be at least 2 characters long'),
 });
 
 export const memberSchema = memberBaseSchema.extend({
