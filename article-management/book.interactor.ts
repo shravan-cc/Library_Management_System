@@ -1,40 +1,9 @@
-import { readChar, readLine } from '../core/input.utils';
+import { readLine } from '../core/input.utils';
 import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
-import { IBookBase } from './models/book.model';
+import { IBookBase, bookBaseSchema } from './models/book.model';
 import { Menu } from '../core/menu';
 import { z } from 'zod';
-
-export const titleSchema = z
-  .string()
-  .min(5, 'Title must be at least 5 characters long')
-  .regex(/^[a-zA-Z]+$/, 'Title must contain only alphabetic characters');
-export const authorSchema = z
-  .string()
-  .min(5, 'Author is required')
-  .regex(/^[a-zA-Z]+$/, 'Author name must contain only alphabetic characters');
-export const publisherSchema = z
-  .string()
-  .min(5, 'Publisher is required')
-  .regex(
-    /^[a-zA-Z]+$/,
-    'Publisher name must contain only alphabetic characters'
-  );
-export const genreSchema = z
-  .string()
-  .min(3, 'Genre is required')
-  .regex(/^[a-zA-Z]+$/, 'Genre must contain only alphabetic characters');
-export const isbnNoSchema = z
-  .string()
-  .min(5, 'ISBN Number must be exactly 13 digits');
-export const numOfPagesSchema = z
-  .number()
-  .int()
-  .positive('Number of pages must be a positive integer');
-export const totalNumOfCopiesSchema = z
-  .number()
-  .int()
-  .positive('Total number of copies must be a positive integer');
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -79,17 +48,17 @@ export class BookInteractor implements IInteractor {
   }
 }
 
-async function promptAndValidate<T>(
+async function promptForValidInput<T>(
   question: string,
-  schema: z.ZodSchema<T>,
-  isNumeric = false
-) {
+  schema: z.ZodSchema<T>
+): Promise<T> {
   let input;
   do {
     input = await readLine(question);
     try {
-      const value = isNumeric ? Number(input) : input;
-      return schema.parse(value);
+      return schema.parse(
+        schema instanceof z.ZodNumber ? Number(input) : input
+      );
     } catch (e) {
       if (e instanceof z.ZodError) {
         console.log('Validation error:', e.errors[0].message);
@@ -101,51 +70,49 @@ async function promptAndValidate<T>(
 }
 
 async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
-  const title = await promptAndValidate(
+  const title = await promptForValidInput(
     `Please enter title${
       existingData?.title ? ` (${existingData.title})` : ''
     }: `,
-    titleSchema
+    bookBaseSchema.shape.title
   );
-  const author = await promptAndValidate(
+  const author = await promptForValidInput(
     `Please enter author${
       existingData?.author ? ` (${existingData.author})` : ''
     }: `,
-    authorSchema
+    bookBaseSchema.shape.author
   );
-  const publisher = await promptAndValidate(
+  const publisher = await promptForValidInput(
     `Please enter publisher${
       existingData?.publisher ? ` (${existingData.publisher})` : ''
     }: `,
-    publisherSchema
+    bookBaseSchema.shape.publisher
   );
-  const genre = await promptAndValidate(
+  const genre = await promptForValidInput(
     `Please enter genre${
       existingData?.genre ? ` (${existingData.genre})` : ''
     }: `,
-    genreSchema
+    bookBaseSchema.shape.genre
   );
-  const isbnNo = await promptAndValidate(
+  const isbnNo = await promptForValidInput(
     `Please enter ISBN Number${
       existingData?.isbnNo ? ` (${existingData.isbnNo})` : ''
     }: `,
-    isbnNoSchema
+    bookBaseSchema.shape.isbnNo
   );
-  const numOfPages = await promptAndValidate(
+  const numOfPages = await promptForValidInput(
     `Please enter total num of pages${
       existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
     }: `,
-    numOfPagesSchema,
-    true
+    bookBaseSchema.shape.numOfPages
   );
-  const totalNumOfCopies = await promptAndValidate(
+  const totalNumOfCopies = await promptForValidInput(
     `Please enter the total num of copies${
       existingData?.totalNumOfCopies
         ? ` (${existingData.totalNumOfCopies})`
         : ''
     }: `,
-    totalNumOfCopiesSchema,
-    true
+    bookBaseSchema.shape.totalNumOfCopies
   );
 
   return {
