@@ -18,25 +18,25 @@ import { z } from 'zod';
 export const bookBaseSchema = z.object({
   title: z
     .string()
-    .min(5, { message: 'Title must be at least 5 characters long' })
+    .min(2, { message: 'Title must be at least 2 characters long' })
     .regex(/^[a-zA-Z\s]+$/, {
       message: 'Title must contain only alphabetic characters',
     }),
   author: z
     .string()
-    .min(2, { message: 'Author is required' })
+    .min(2, { message: 'Author name must be at least 2 characters long' })
     .regex(/^[a-zA-Z\s]+$/, {
       message: 'Author name must contain only alphabetic characters',
     }),
   publisher: z
     .string()
-    .min(5, { message: 'Publisher is required' })
+    .min(2, { message: 'Publisher name must be at least 2 characters long' })
     .regex(/^[a-zA-Z\s/\/-]+$/, {
       message: 'Publisher name must contain only alphabetic characters',
     }),
   genre: z
     .string()
-    .min(3, { message: 'Genre is required' })
+    .min(2, { message: 'Genre must be at least 2 characters long' })
     .regex(/^[a-zA-Z/\/-]+$/, {
       message: 'Genre must contain only alphabetic characters',
     }),
