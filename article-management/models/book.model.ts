@@ -19,25 +19,25 @@ export const bookBaseSchema = z.object({
   title: z
     .string()
     .min(2, { message: 'Title must be at least 2 characters long' })
-    .regex(/^[a-zA-Z\s]+$/, {
+    .regex(/^[a-zA-Z\s\/\-.]+$/, {
       message: 'Title must contain only alphabetic characters',
     }),
   author: z
     .string()
     .min(2, { message: 'Author name must be at least 2 characters long' })
-    .regex(/^[a-zA-Z\s]+$/, {
+    .regex(/^[a-zA-Z\s\/\-.]+$/, {
       message: 'Author name must contain only alphabetic characters',
     }),
   publisher: z
     .string()
     .min(2, { message: 'Publisher name must be at least 2 characters long' })
-    .regex(/^[a-zA-Z\s/\/-]+$/, {
+    .regex(/^[a-zA-Z\s\/\-.]+$/, {
       message: 'Publisher name must contain only alphabetic characters',
     }),
   genre: z
     .string()
     .min(2, { message: 'Genre must be at least 2 characters long' })
-    .regex(/^[a-zA-Z/\/-]+$/, {
+    .regex(/^[a-zA-Z\s\/\-.]+$/, {
       message: 'Genre must contain only alphabetic characters',
     }),
   isbnNo: z
