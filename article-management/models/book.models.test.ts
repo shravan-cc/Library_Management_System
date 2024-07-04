@@ -1,9 +1,9 @@
-import {test,expect} from 'vitest'
-import {bookBaseSchema, bookSchema} from './book.model'
+import { test, expect } from 'vitest';
+import { bookBaseSchema, bookSchema } from './book.model';
 
 const validBookBaseData = {
   title: 'The Great Gatsby',
-  author: 'F. Scott Fitzgerald',
+  author: 'F Scott Fitzgerald',
   publisher: 'Scribner',
   genre: 'Novel',
   isbnNo: '9780743273565',

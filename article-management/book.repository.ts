@@ -1,54 +1,60 @@
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { IRepository } from '../core/repository';
+import { Database } from '../db/db';
 import { IBook, IBookBase } from './models/book.model';
 
-const books: IBook[] = [];
-
 export class BookRepository implements IRepository<IBookBase, IBook> {
-  create(data: IBookBase): IBook {
+  constructor(private readonly db: Database) {}
+  private get books(): IBook[] {
+    return this.db.table<IBook>('books');
+  }
+  async create(data: IBookBase): Promise<IBook> {
     const book: IBook = {
       ...data,
-      id: books.length + 1,
+      id: this.books.length + 1,
       availableNumOfCopies: data.totalNumOfCopies,
     };
-    books.push(book);
+    this.books.push(book);
+    await this.db.save();
     return book;
   }
 
-  update(id: number, data: IBookBase): IBook | null {
-    const index = books.findIndex((b) => b.id === id);
+  async update(id: number, data: IBookBase): Promise<IBook | null> {
+    const index = this.books.findIndex((b) => b.id === id);
     if (index === -1) {
       return null; //
     }
     const updatedBook: IBook = {
-      id: books[index].id,
+      id: this.books[index].id,
       ...data,
       availableNumOfCopies: data.totalNumOfCopies,
     };
-    books[index] = updatedBook;
+    this.books[index] = updatedBook;
+    await this.db.save();
     return updatedBook;
   }
-  delete(id: number): IBook | null {
-    const index = books.findIndex((book) => book.id === id);
+
+  async delete(id: number): Promise<IBook | null> {
+    const index = this.books.findIndex((book) => book.id === id);
     if (index !== -1) {
-      const deletedBook: IBook = books.splice(index, 1)[0];
+      const deletedBook: IBook = this.books.splice(index, 1)[0];
       return deletedBook;
     }
     return null;
   }
-  getById(id: number): IBook | null {
-    const book = books.find((b) => b.id === id);
+  async getById(id: number): Promise<IBook | null> {
+    const book = this.books.find((b) => b.id === id);
     return book || null;
   }
-  list(params: IPageRequest): IPagedResponse<IBook> {
+  async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
     const search = params.search?.toLowerCase();
     const filteredBooks = search
-      ? books.filter(
+      ? this.books.filter(
           (b) =>
             b.title.toLowerCase().includes(search) ||
             b.isbnNo.toLowerCase().includes(search)
         )
-      : books;
+      : this.books;
     return {
       items: filteredBooks.slice(params.offset, params.offset + params.limit),
       pagination: {

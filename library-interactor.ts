@@ -4,6 +4,7 @@ import { BookRepository } from './article-management/book.repository';
 import { BookInteractor } from './article-management/book.interactor';
 import { Menu } from './core/menu';
 import { MemberInteractor } from './member-management/member.interactor';
+import { Database } from './db/db';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -14,20 +15,23 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-  private readonly bookInteractor = new BookInteractor();
-  private readonly memberInteractor = new MemberInteractor();
+  private readonly db = new Database('./data/db.json');
+  private readonly bookInteractor = new BookInteractor(this.db);
+  private readonly memberInteractor = new MemberInteractor(this.db);
   async showMenu(): Promise<void> {
-    console.log('\n|---------------------------------------------------------------------------|');
+    console.log(
+      '\n|---------------------------------------------------------------------------|'
+    );
     console.log('*\t\t\twelcome to library management\t\t\t    *');
     console.log(
       '|---------------------------------------------------------------------------|'
     );
     while (true) {
-      console.log('\n\t\tMain Menu')
+      console.log('\n\t\tMain Menu');
       const op = await menu.show();
       switch (op.toLowerCase()) {
         case '1':
-          console.log('\t\tBook Menu\n')
+          console.log('\t\tBook Menu\n');
           await this.bookInteractor.showMenu();
           break;
         case '2':

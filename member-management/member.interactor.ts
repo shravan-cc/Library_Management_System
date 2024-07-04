@@ -4,6 +4,14 @@ import { readChar, readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
+import { Database } from '../db/db';
+
+const searchSchema = z
+  .string()
+  .min(2, { message: 'Name must be at least 2 characters long' })
+  .regex(/^[a-zA-Z\s]+$/, {
+    message: 'Name must contain only alphabetic characters',
+  });
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
@@ -14,7 +22,8 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  private repo = new MemberRepository();
+  constructor(private readonly db: Database) {}
+  private repo = new MemberRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {
@@ -26,7 +35,6 @@ export class MemberInteractor implements IInteractor {
           break;
         case '2':
           await editMember(this.repo);
-          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
           await searchMember(this.repo);
@@ -35,7 +43,7 @@ export class MemberInteractor implements IInteractor {
           await deleteMember(this.repo);
           break;
         case '5':
-          displayMembers(this.repo);
+          await displayMembers(this.repo);
           break;
         case '6':
           loop = false;
@@ -55,10 +63,10 @@ async function promptForValidInput<T>(
   let input;
   do {
     input = await readLine(question);
-    if (!input && defaultValue != 'undefined') {
-      return defaultValue;
-    }
     try {
+      if (!input && defaultValue !== undefined) {
+        return defaultValue;
+      }
       return schema.parse(
         schema instanceof z.ZodNumber ? Number(input) : input
       );
@@ -80,21 +88,21 @@ async function getMemberInput(
       existingData?.firstName ? ` (${existingData.firstName})` : ''
     }: `,
     memberBaseSchema.shape.firstName,
-    existingData?.firstName ?? ''
+    existingData?.firstName
   );
   const lastName = await promptForValidInput(
     `Please enter Last Name${
       existingData?.lastName ? ` (${existingData.lastName})` : ''
     }: `,
     memberBaseSchema.shape.lastName,
-    existingData?.lastName ?? ''
+    existingData?.lastName
   );
   const phone = await promptForValidInput(
     `Please enter Phone Number${
       existingData?.phone ? ` (${existingData.phone})` : ''
     }: `,
     memberBaseSchema.shape.phone,
-    existingData?.phone ?? 0
+    existingData?.phone
   );
 
   const address = await promptForValidInput(
@@ -102,24 +110,24 @@ async function getMemberInput(
       existingData?.address ? ` (${existingData.address})` : ''
     }: `,
     memberBaseSchema.shape.address,
-    existingData?.address ?? ''
+    existingData?.address
   );
   return {
-    firstName: firstName,
-    lastName: lastName,
-    phone: phone,
-    address: address,
+    firstName: firstName || '',
+    lastName: lastName || '',
+    phone: phone || 0,
+    address: address || '',
   };
 }
 async function addMember(repo: MemberRepository) {
   const member: IMemberBase = await getMemberInput();
-  const createdMember = repo.create(member);
+  const createdMember = await repo.create(member);
   console.log('Member Added successfully..\n');
   console.table(createdMember);
 }
 async function deleteMember(repo: MemberRepository) {
   const id = +(await readLine('Enter the ID of the book to delete: '));
-  const deletedMember = repo.delete(id);
+  const deletedMember = await repo.delete(id);
   if (deletedMember) {
     console.log('Deleted Member:', deletedMember);
   } else {
@@ -129,7 +137,7 @@ async function deleteMember(repo: MemberRepository) {
 
 async function editMember(repo: MemberRepository) {
   const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
-  const existingMember = repo.getById(id);
+  const existingMember = await repo.getById(id);
 
   if (!existingMember) {
     console.log('Member not Found');
@@ -140,7 +148,7 @@ async function editMember(repo: MemberRepository) {
   console.table(existingMember);
 
   const updatedData = await getMemberInput(existingMember);
-  const updatedMember = repo.update(id, updatedData);
+  const updatedMember = await repo.update(id, updatedData);
 
   if (updatedMember) {
     console.log('Member updated successfully..\n');
@@ -150,8 +158,8 @@ async function editMember(repo: MemberRepository) {
   }
 }
 
-function displayMembers(repo: MemberRepository) {
-  const members = repo.list({ limit: 100, offset: 0 }).items;
+async function displayMembers(repo: MemberRepository) {
+  const members = (await repo.list({ limit: 100, offset: 0 })).items;
   if (members.length === 0) {
     console.log('Member not found');
   } else {
@@ -159,13 +167,54 @@ function displayMembers(repo: MemberRepository) {
   }
 }
 async function searchMember(repo: MemberRepository) {
-  const search = await readLine(
-    'Enter the First Name/Last Name of the person whom you want to search: '
+  const search = await promptForValidInput(
+    'Enter the First Name/Last Name of the person whom you want to search: ',
+    searchSchema,
+    ''
   );
-  const members = repo.list({ search, limit: 100, offset: 0 }).items;
-  if (members.length === 0) {
-    console.log('Member not found');
-  } else {
-    console.table(members);
-  }
+  const limit: number = 1;
+  let currentPage: number = 0;
+  const loadData = async () => {
+    const members = await repo.list({
+      search: search || undefined,
+      limit: limit,
+      offset: currentPage * limit,
+    });
+    if (members.items.length > 0) {
+      console.log(`\n\n Current Page: ${currentPage + 1}`);
+      console.table(members.items);
+      const hasPreviousPage: boolean = currentPage > 0;
+      const hasNextPage: boolean =
+        members.pagination.offset + members.pagination.limit <
+        members.pagination.total;
+
+      if (hasPreviousPage) {
+        console.log('P:\tPrevious Page');
+      }
+      if (hasNextPage) {
+        console.log('N:Next Page');
+      }
+      if (hasPreviousPage || hasNextPage) {
+        console.log('Q:\tQuit');
+        const askChoice = async () => {
+          const op = await readLine('\nChoice: ');
+          console.log(op, '\n\n');
+          if (op === 'P' && hasPreviousPage) {
+            currentPage--;
+            await loadData();
+          } else if (op === 'N' && hasNextPage) {
+            currentPage++;
+            await loadData();
+          } else if (op !== 'Q') {
+            console.log('Invalid Choice:\n');
+            await askChoice();
+          }
+        };
+        await askChoice();
+      }
+    } else {
+      console.log('\n No Data To Show');
+    }
+  };
+  await loadData();
 }

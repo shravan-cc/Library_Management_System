@@ -1,10 +1,16 @@
+import { Database } from '../db/db';
 import { BookRepository } from './book.repository';
 import { IBookBase } from './models/book.model';
 
 describe('BookRepository Tests', () => {
   let books: IBookBase[];
   let bookRepository: BookRepository;
+  let db: Database;
 
+  beforeAll(async () => {
+    db = new Database('./data/dbtest.json');
+    await db.clear();
+  });
   beforeEach(() => {
     books = [
       {
@@ -53,12 +59,12 @@ describe('BookRepository Tests', () => {
         totalNumOfCopies: 50,
       },
     ];
-    bookRepository = new BookRepository();
+    bookRepository = new BookRepository(db);
   });
 
-  test('should create a book', () => {
+  test('should create a book', async () => {
     const data: IBookBase = books[0];
-    const createdBook = bookRepository.create(data);
+    const createdBook = await bookRepository.create(data);
     expect(createdBook).toBeDefined();
     expect(createdBook).toEqual({
       ...data,
@@ -67,16 +73,19 @@ describe('BookRepository Tests', () => {
     });
   });
 
-  test('should update a book', () => {
+  test('should update a book', async () => {
     const data: IBookBase = books[0];
-    const createdBook = bookRepository.create(data);
+    const createdBook = await bookRepository.create(data);
     const updatedData: IBookBase = {
       ...data,
       title: 'The Mysterious Island - Updated',
       numOfPages: 350,
     };
 
-    const updatedBook = bookRepository.update(createdBook.id, updatedData);
+    const updatedBook = await bookRepository.update(
+      createdBook.id,
+      updatedData
+    );
 
     expect(updatedBook).toBeDefined();
     expect(updatedBook).toEqual({
@@ -86,18 +95,18 @@ describe('BookRepository Tests', () => {
     });
   });
 
-  test('should delete a book', () => {
-    const createdBook = bookRepository.create(books[4]);
-    const deletedBook = bookRepository.delete(createdBook.id);
+  test('should delete a book', async () => {
+    const createdBook = await bookRepository.create(books[4]);
+    const deletedBook = await bookRepository.delete(createdBook.id);
     expect(deletedBook).toBeDefined();
     expect(deletedBook).toEqual(createdBook);
-    const fetchedBook = bookRepository.getById(createdBook.id);
+    const fetchedBook = await bookRepository.getById(createdBook.id);
     expect(fetchedBook).toBeNull();
   });
 
-  test('should get a book by id', () => {
-    const createdBook = bookRepository.create(books[0]);
-    const fetchedBook = bookRepository.getById(createdBook.id);
+  test('should get a book by id', async () => {
+    const createdBook = await bookRepository.create(books[0]);
+    const fetchedBook = await bookRepository.getById(createdBook.id);
     expect(fetchedBook).toBeDefined();
     expect(fetchedBook).toEqual(createdBook);
   });
