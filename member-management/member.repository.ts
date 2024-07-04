@@ -2,12 +2,13 @@ import { IMember, IMemberBase } from './models/member.model';
 import { IRepository } from '../core/repository';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
 
 export class MemberRepository implements IRepository<IMemberBase, IMember> {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database<LibraryDataset>) {}
   private currentId = 0;
   private get members(): IMember[] {
-    return this.db.table<IMember>('members');
+    return this.db.table('members');
   }
   private generateId() {
     this.currentId = Math.max(...this.members.map((member) => member.memberId));

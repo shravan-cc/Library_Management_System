@@ -5,6 +5,7 @@ import { IBookBase, bookBaseSchema } from './models/book.model';
 import { Menu } from '../core/menu';
 import { z } from 'zod';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -16,7 +17,7 @@ const menu = new Menu([
 ]);
 
 export class BookInteractor implements IInteractor {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database<LibraryDataset>) {}
   private repo = new BookRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;

@@ -1,12 +1,13 @@
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { IRepository } from '../core/repository';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
 import { IBook, IBookBase } from './models/book.model';
 
 export class BookRepository implements IRepository<IBookBase, IBook> {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database<LibraryDataset>) {}
   private get books(): IBook[] {
-    return this.db.table<IBook>('books');
+    return this.db.table('books');
   }
   async create(data: IBookBase): Promise<IBook> {
     const book: IBook = {

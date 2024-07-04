@@ -5,6 +5,7 @@ import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
 
 const searchSchema = z
   .string()
@@ -22,7 +23,7 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Database<LibraryDataset>) {}
   private repo = new MemberRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
