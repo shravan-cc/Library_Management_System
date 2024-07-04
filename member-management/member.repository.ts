@@ -5,13 +5,20 @@ import { Database } from '../db/db';
 
 export class MemberRepository implements IRepository<IMemberBase, IMember> {
   constructor(private readonly db: Database) {}
+  private currentId = 0;
   private get members(): IMember[] {
     return this.db.table<IMember>('members');
   }
+  private generateId() {
+    this.currentId = Math.max(...this.members.map((member) => member.memberId));
+    this.currentId += 1;
+    return this.currentId;
+  }
   async create(data: IMemberBase): Promise<IMember> {
+    const id = this.generateId();
     const member: IMember = {
       ...data,
-      memberId: this.members.length + 1,
+      memberId: id,
     };
     this.members.push(member);
     await this.db.save();

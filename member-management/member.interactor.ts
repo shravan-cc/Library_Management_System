@@ -159,12 +159,17 @@ async function editMember(repo: MemberRepository) {
 }
 
 async function displayMembers(repo: MemberRepository) {
-  const members = (await repo.list({ limit: 100, offset: 0 })).items;
+  const limit = +(await readLine(
+    'Enter the maximum number of records you want to display: '
+  ));
+  let currentPage: number = 0;
+  await loadData(repo, '', limit, currentPage);
+  /*const members = (await repo.list({ limit: 100, offset: 0 })).items;
   if (members.length === 0) {
     console.log('Member not found');
   } else {
     console.table(members);
-  }
+  }*/
 }
 async function searchMember(repo: MemberRepository) {
   const search = await promptForValidInput(
@@ -174,47 +179,54 @@ async function searchMember(repo: MemberRepository) {
   );
   const limit: number = 1;
   let currentPage: number = 0;
-  const loadData = async () => {
-    const members = await repo.list({
-      search: search || undefined,
-      limit: limit,
-      offset: currentPage * limit,
-    });
-    if (members.items.length > 0) {
-      console.log(`\n\n Current Page: ${currentPage + 1}`);
-      console.table(members.items);
-      const hasPreviousPage: boolean = currentPage > 0;
-      const hasNextPage: boolean =
-        members.pagination.offset + members.pagination.limit <
-        members.pagination.total;
-
-      if (hasPreviousPage) {
-        console.log('P:\tPrevious Page');
-      }
-      if (hasNextPage) {
-        console.log('N:Next Page');
-      }
-      if (hasPreviousPage || hasNextPage) {
-        console.log('Q:\tQuit');
-        const askChoice = async () => {
-          const op = await readLine('\nChoice: ');
-          console.log(op, '\n\n');
-          if (op === 'P' && hasPreviousPage) {
-            currentPage--;
-            await loadData();
-          } else if (op === 'N' && hasNextPage) {
-            currentPage++;
-            await loadData();
-          } else if (op !== 'Q') {
-            console.log('Invalid Choice:\n');
-            await askChoice();
-          }
-        };
-        await askChoice();
-      }
-    } else {
-      console.log('\n No Data To Show');
-    }
-  };
-  await loadData();
+  await loadData(repo, search, limit, currentPage);
 }
+
+const loadData = async (
+  repo: MemberRepository,
+  search: string,
+  limit: number,
+  currentPage: number
+) => {
+  const members = await repo.list({
+    search: search || undefined,
+    limit: limit,
+    offset: currentPage * limit,
+  });
+  if (members.items.length > 0) {
+    const totalPages = Math.ceil(members.pagination.total / limit);
+    console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
+    console.table(members.items);
+    const hasPreviousPage: boolean = currentPage > 0;
+    const hasNextPage: boolean =
+      members.pagination.offset + members.pagination.limit <
+      members.pagination.total;
+
+    if (hasPreviousPage) {
+      console.log('P:\tPrevious Page');
+    }
+    if (hasNextPage) {
+      console.log('N:Next Page');
+    }
+    if (hasPreviousPage || hasNextPage) {
+      console.log('Q:\tQuit');
+      const askChoice = async () => {
+        const op = (await readLine('\nChoice: ')).toUpperCase();
+        console.log(op, '\n\n');
+        if (op === 'P' && hasPreviousPage) {
+          currentPage--;
+          await loadData(repo, search, limit, currentPage);
+        } else if (op === 'N' && hasNextPage) {
+          currentPage++;
+          await loadData(repo, search, limit, currentPage);
+        } else if (op !== 'Q') {
+          console.log('Invalid Choice:\n');
+          await askChoice();
+        }
+      };
+      await askChoice();
+    }
+  } else {
+    console.log('\n No Data To Show');
+  }
+};
