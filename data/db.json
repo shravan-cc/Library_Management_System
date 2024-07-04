@@ -1,1 +1,63 @@
-{"members":[{"firstName":"virat","lastName":"kohli","phone":9632483331,"address":"Delhi","memberId":1},{"firstName":"rohith","lastName":"sharma","phone":7829132900,"address":"Mumbai","memberId":2},{"firstName":"Shravan","lastName":"Hegde","phone":8792225251,"address":"Mangalore","memberId":3},{"firstName":"Lionel","lastName":"Messi","phone":7676483390,"address":"Argentina","memberId":4},{"firstName":"","lastName":"","phone":0,"address":"","memberId":6}]}
+{
+  "members": [
+    {
+      "firstName": "virat",
+      "lastName": "kohli",
+      "phone": 9632483331,
+      "address": "Delhi",
+      "memberId": 1
+    },
+    {
+      "firstName": "rohith",
+      "lastName": "sharma",
+      "phone": 7829132900,
+      "address": "Mumbai",
+      "memberId": 2
+    },
+    {
+      "firstName": "Shravan",
+      "lastName": "Hegde",
+      "phone": 8792225251,
+      "address": "Mangalore",
+      "memberId": 3
+    },
+    {
+      "firstName": "Lionel",
+      "lastName": "Messi",
+      "phone": 7676483390,
+      "address": "Argentina",
+      "memberId": 4
+    },
+    {
+      "firstName": "",
+      "lastName": "",
+      "phone": 0,
+      "address": "",
+      "memberId": 6
+    }
+  ],
+  "books": [
+    {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "publisher": "Scribner",
+      "genre": "Fiction",
+      "isbnNo": "9780743273565",
+      "numOfPages": 180,
+      "totalNumOfCopies": 5,
+      "id": 1,
+      "availableNumOfCopies": 5
+    },
+    {
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "publisher": "J. B. Lippicot and co.",
+      "genre": "Fiction",
+      "isbnNo": "9780060935467",
+      "numOfPages": 281,
+      "totalNumOfCopies": 3,
+      "id": 2,
+      "availableNumOfCopies": 3
+    }
+  ]
+}

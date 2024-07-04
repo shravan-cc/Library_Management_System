@@ -79,14 +79,14 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
       existingData?.title ? ` (${existingData.title})` : ''
     }: `,
     bookBaseSchema.shape.title,
-    existingData?.title 
+    existingData?.title
   );
   const author = await promptForValidInput(
     `Please enter author${
       existingData?.author ? ` (${existingData.author})` : ''
     }: `,
     bookBaseSchema.shape.author,
-    existingData?.author 
+    existingData?.author
   );
   const publisher = await promptForValidInput(
     `Please enter publisher${
@@ -193,7 +193,7 @@ async function searchBook(repo: BookRepository) {
   const pageSize = 1;
   let currentPage = 0;
   const loadPage = async () => {
-    const result = repo.list({
+    const result = await repo.list({
       search: search || undefined,
       offset: currentPage * pageSize,
       limit: pageSize,
@@ -203,29 +203,28 @@ async function searchBook(repo: BookRepository) {
       console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
       console.table(result.items);
       const hasPreviousPage = currentPage > 0;
-      
+
       const hasNextPage =
         result.pagination.offset + result.pagination.limit <
         result.pagination.total;
-      if (hasNextPage) {
-        console.log('\nn\tnext page');
-      }
       if (hasPreviousPage) {
         console.log('\np previous page');
       }
-      if (hasPreviousPage && hasNextPage) {
+      if (hasNextPage) {
+        console.log('\nn\tnext page');
+      }
+      if (hasPreviousPage || hasNextPage) {
         console.log('\nq exit');
         const askChoice = async () => {
-          const op = (await readChar('\nChoice :')).toLowerCase();
+          const op = (await readLine('\nChoice :')).toLowerCase();
           console.log(op, '\n\n');
           if (op === 'n' && hasNextPage) {
             currentPage++;
             await loadPage();
-          } else if (op === 'p' && hasPreviousPage) { 
+          } else if (op === 'p' && hasPreviousPage) {
             currentPage--;
             await loadPage();
-          }
-          else if (op !== 'q') {
+          } else if (op !== 'q') {
             console.log('invalid choice..!!');
             await askChoice();
           }
@@ -233,7 +232,7 @@ async function searchBook(repo: BookRepository) {
         await askChoice();
       }
     } else {
-      console.log('not found');
+      console.log('No Data To Show');
     }
   };
   await loadPage();
