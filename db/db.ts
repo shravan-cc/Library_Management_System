@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export type ColumnData = string | number | boolean | null;
 export type Row = Record<string, ColumnData>;
@@ -16,7 +16,7 @@ export const JsonAdapter: DatabaseStorageAdapter = {
       return JSON.parse(content);
     } catch (e) {
       console.error(
-        "Given filePath is not empty and its content is not valid JSON."
+        'Given filePath is not empty and its content is not valid JSON.'
       );
       throw e;
     }
@@ -34,7 +34,7 @@ export class Database {
     private readonly adapter: DatabaseStorageAdapter = JsonAdapter
   ) {
     if (!filePath) {
-      throw new Error("Missing file path argument.");
+      throw new Error('Missing file path argument.');
     }
 
     const dir = path.dirname(filePath);
@@ -44,9 +44,9 @@ export class Database {
     try {
       stats = fs.statSync(filePath);
     } catch (err: any) {
-      if (err.code === "ENOENT") {
+      if (err.code === 'ENOENT') {
         return;
-      } else if (err.code === "EACCES") {
+      } else if (err.code === 'EACCES') {
         throw new Error(`Cannot access path "${filePath}".`);
       } else {
         throw new Error(
@@ -65,7 +65,7 @@ export class Database {
     if (stats.size > 0) {
       let data: string;
       try {
-        data = fs.readFileSync(filePath, { encoding: "utf-8" });
+        data = fs.readFileSync(filePath, { encoding: 'utf-8' });
       } catch (err) {
         throw err;
       }
@@ -74,7 +74,7 @@ export class Database {
   }
 
   table<T>(tableName: string): T[] {
-    if (typeof this.dataStore[tableName] === "undefined") {
+    if (typeof this.dataStore[tableName] === 'undefined') {
       this.dataStore[tableName] = [];
     }
     return this.dataStore[tableName] as T[];
@@ -86,8 +86,12 @@ export class Database {
         this.adapter.serialize(this.dataStore)
       );
     } catch (e) {
-      console.error("Failed to save data to the given filePath.");
+      console.error('Failed to save data to the given filePath.');
       throw e;
     }
+  }
+  async clear() {
+    this.dataStore = {};
+    await this.save();
   }
 }

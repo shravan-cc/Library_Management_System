@@ -1,9 +1,9 @@
-import {test,expect} from 'vitest'
-import {bookBaseSchema, bookSchema} from './book.model'
+import { test, expect } from 'vitest';
+import { bookBaseSchema, bookSchema } from './book.model';
 
 const validBookBaseData = {
   title: 'The Great Gatsby',
-  author: 'F. Scott Fitzgerald',
+  author: 'F Scott Fitzgerald',
   publisher: 'Scribner',
   genre: 'Novel',
   isbnNo: '9780743273565',
@@ -32,9 +32,9 @@ const invalidBookData = {
   id: 'one', // Invalid id type
   availableNumOfCopies: -1, // Invalid availableNumOfCopies
 };
-test('', () => { 
-    expect(() => bookBaseSchema.parse(validBookData)).not.toThrow();
-})
-test('', () => {  
-    expect(() => bookSchema.parse(invalidBookData)).toThrow();
-})
+test('', () => {
+  expect(() => bookBaseSchema.parse(validBookData)).not.toThrow();
+});
+test('', () => {
+  expect(() => bookSchema.parse(invalidBookData)).toThrow();
+});
