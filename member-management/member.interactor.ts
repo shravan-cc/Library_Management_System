@@ -2,24 +2,8 @@ import { IInteractor } from '../core/interactor';
 import { MemberRepository } from './member.repository';
 import { readChar, readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
-import { IMemberBase } from './models/member.model';
+import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
-
-export const firstNameSchema = z
-  .string()
-  .min(1, 'First Name is required')
-  .regex(/^[a-zA-Z]+$/, 'First Name must contain only alphabetic characters');
-export const lastNameSchema = z
-  .string()
-  .min(1, 'Last Name is required')
-  .regex(/^[a-zA-Z]+$/, 'Last Name must contain only alphabetic characters');
-export const phoneSchema = z
-  .string()
-  .length(10, 'Phone Number must be at least 10 digits')
-  .regex(/^\d+$/, 'Phone Number must contain only numeric digits');
-export const addressSchema = z
-  .string()
-  .min(5, 'Address must be at least 5 characters long');
 
 const menu = new Menu([
   { key: '1', label: 'Add Member' },
@@ -34,11 +18,7 @@ export class MemberInteractor implements IInteractor {
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {
-      const op = await readChar(menu.serialize());
-      const menuItem = menu.getItem(op);
-      if (menuItem) {
-        console.log(`Choice: ${menuItem.key}.\t${menuItem.label}`);
-      }
+      const op = await menu.show();
       switch (op.toLowerCase()) {
         case '1':
           await addMember(this.repo);
@@ -67,12 +47,17 @@ export class MemberInteractor implements IInteractor {
   }
 }
 
-async function promptAndValidate<T>(question: string, schema: z.ZodSchema<T>) {
+async function promptAndValidate<T>(
+  question: string,
+  schema: z.ZodSchema<T>
+): Promise<T> {
   let input;
   do {
     input = await readLine(question);
     try {
-      return schema.parse(input);
+      return schema.parse(
+        schema instanceof z.ZodNumber ? Number(input) : input
+      );
     } catch (e) {
       if (e instanceof z.ZodError) {
         console.log('Validation error:', e.errors[0].message);
@@ -90,26 +75,26 @@ async function getMemberInput(
     `Please enter First Name${
       existingData?.firstName ? ` (${existingData.firstName})` : ''
     }: `,
-    firstNameSchema
+    memberBaseSchema.shape.firstName
   );
   const lastName = await promptAndValidate(
     `Please enter Last Name${
       existingData?.lastName ? ` (${existingData.lastName})` : ''
     }: `,
-    lastNameSchema
+    memberBaseSchema.shape.lastName
   );
   const phone = await promptAndValidate(
     `Please enter Phone Number${
       existingData?.phone ? ` (${existingData.phone})` : ''
     }: `,
-    phoneSchema
+    memberBaseSchema.shape.phone
   );
 
   const address = await promptAndValidate(
     `Please provide your address${
       existingData?.address ? ` (${existingData.address})` : ''
     }: `,
-    addressSchema
+    memberBaseSchema.shape.address
   );
   return {
     firstName: firstName || existingData?.firstName || '',
