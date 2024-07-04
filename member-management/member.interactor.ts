@@ -47,13 +47,17 @@ export class MemberInteractor implements IInteractor {
   }
 }
 
-async function promptAndValidate<T>(
+async function promptForValidInput<T>(
   question: string,
-  schema: z.ZodSchema<T>
+  schema: z.ZodSchema<T>,
+  defaultValue: T
 ): Promise<T> {
   let input;
   do {
     input = await readLine(question);
+    if (!input && defaultValue != 'undefined') {
+      return defaultValue;
+    }
     try {
       return schema.parse(
         schema instanceof z.ZodNumber ? Number(input) : input
@@ -71,36 +75,40 @@ async function promptAndValidate<T>(
 async function getMemberInput(
   existingData?: IMemberBase
 ): Promise<IMemberBase> {
-  const firstName = await promptAndValidate(
+  const firstName = await promptForValidInput(
     `Please enter First Name${
       existingData?.firstName ? ` (${existingData.firstName})` : ''
     }: `,
-    memberBaseSchema.shape.firstName
+    memberBaseSchema.shape.firstName,
+    existingData?.firstName ?? ''
   );
-  const lastName = await promptAndValidate(
+  const lastName = await promptForValidInput(
     `Please enter Last Name${
       existingData?.lastName ? ` (${existingData.lastName})` : ''
     }: `,
-    memberBaseSchema.shape.lastName
+    memberBaseSchema.shape.lastName,
+    existingData?.lastName ?? ''
   );
-  const phone = await promptAndValidate(
+  const phone = await promptForValidInput(
     `Please enter Phone Number${
       existingData?.phone ? ` (${existingData.phone})` : ''
     }: `,
-    memberBaseSchema.shape.phone
+    memberBaseSchema.shape.phone,
+    existingData?.phone ?? 0
   );
 
-  const address = await promptAndValidate(
+  const address = await promptForValidInput(
     `Please provide your address${
       existingData?.address ? ` (${existingData.address})` : ''
     }: `,
-    memberBaseSchema.shape.address
+    memberBaseSchema.shape.address,
+    existingData?.address ?? ''
   );
   return {
-    firstName: firstName || existingData?.firstName || '',
-    lastName: lastName || existingData?.lastName || '',
-    phone: +phone || existingData?.phone || 0,
-    address: address || existingData?.address || '',
+    firstName: firstName,
+    lastName: lastName,
+    phone: phone,
+    address: address,
   };
 }
 async function addMember(repo: MemberRepository) {
