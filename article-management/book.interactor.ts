@@ -23,11 +23,9 @@ export class BookInteractor implements IInteractor {
       switch (op.toLowerCase()) {
         case '1':
           await addBook(this.repo);
-          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '2':
           await editBook(this.repo);
-          console.table(this.repo.list({ limit: 100, offset: 0 }).items);
           break;
         case '3':
           await searchBook(this.repo);
@@ -50,11 +48,15 @@ export class BookInteractor implements IInteractor {
 
 async function promptForValidInput<T>(
   question: string,
-  schema: z.ZodSchema<T>
+  schema: z.ZodSchema<T>,
+  defaultValue: T
 ): Promise<T> {
   let input;
   do {
     input = await readLine(question);
+    if (!input && defaultValue != 'undefined') {
+      return defaultValue;
+    }
     try {
       return schema.parse(
         schema instanceof z.ZodNumber ? Number(input) : input
@@ -74,37 +76,43 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
     `Please enter title${
       existingData?.title ? ` (${existingData.title})` : ''
     }: `,
-    bookBaseSchema.shape.title
+    bookBaseSchema.shape.title,
+    existingData?.title ?? ''
   );
   const author = await promptForValidInput(
     `Please enter author${
       existingData?.author ? ` (${existingData.author})` : ''
     }: `,
-    bookBaseSchema.shape.author
+    bookBaseSchema.shape.author,
+    existingData?.author ?? ''
   );
   const publisher = await promptForValidInput(
     `Please enter publisher${
       existingData?.publisher ? ` (${existingData.publisher})` : ''
     }: `,
-    bookBaseSchema.shape.publisher
+    bookBaseSchema.shape.publisher,
+    existingData?.publisher ?? ''
   );
   const genre = await promptForValidInput(
     `Please enter genre${
       existingData?.genre ? ` (${existingData.genre})` : ''
     }: `,
-    bookBaseSchema.shape.genre
+    bookBaseSchema.shape.genre,
+    existingData?.genre ?? ''
   );
   const isbnNo = await promptForValidInput(
     `Please enter ISBN Number${
       existingData?.isbnNo ? ` (${existingData.isbnNo})` : ''
     }: `,
-    bookBaseSchema.shape.isbnNo
+    bookBaseSchema.shape.isbnNo,
+    existingData?.isbnNo ?? ''
   );
   const numOfPages = await promptForValidInput(
     `Please enter total num of pages${
       existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
     }: `,
-    bookBaseSchema.shape.numOfPages
+    bookBaseSchema.shape.numOfPages,
+    existingData?.numOfPages ?? 0
   );
   const totalNumOfCopies = await promptForValidInput(
     `Please enter the total num of copies${
@@ -112,17 +120,18 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
         ? ` (${existingData.totalNumOfCopies})`
         : ''
     }: `,
-    bookBaseSchema.shape.totalNumOfCopies
+    bookBaseSchema.shape.totalNumOfCopies,
+    existingData?.totalNumOfCopies ?? 0
   );
 
   return {
-    title: title || existingData?.title || '',
-    author: author || existingData?.author || '',
-    publisher: publisher || existingData?.publisher || '',
-    genre: genre || existingData?.genre || '',
-    isbnNo: isbnNo || existingData?.isbnNo || '',
-    numOfPages: +numOfPages || existingData?.numOfPages || 0,
-    totalNumOfCopies: +totalNumOfCopies || existingData?.totalNumOfCopies || 0,
+    title: title,
+    author: author,
+    publisher: publisher,
+    genre: genre,
+    isbnNo: isbnNo,
+    numOfPages: numOfPages,
+    totalNumOfCopies: totalNumOfCopies,
   };
 }
 
