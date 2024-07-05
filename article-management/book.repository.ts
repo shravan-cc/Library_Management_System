@@ -11,9 +11,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     return this.db.table('books');
   }
   private generateBookId() {
-    this.currentBookId = Math.max(
-      ...this.books.map((book) => book.id)
-    );
+    this.currentBookId = Math.max(...this.books.map((book) => book.id));
     this.currentBookId += 1;
     return this.currentBookId;
   }
