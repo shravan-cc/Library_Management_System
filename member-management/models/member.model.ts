@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { MemberInteractor } from '../member.interactor';
 
 // interface IMemberBase {
 //   firstName: 'string';
@@ -16,16 +15,23 @@ import { MemberInteractor } from '../member.interactor';
 export const memberBaseSchema = z.object({
   firstName: z
     .string()
+    .trim()
     .min(2, { message: 'First name must be at least 2 characters long' })
     .regex(/^[a-zA-Z\s]+$/, {
       message: 'First name must contain only alphabetic characters',
     }),
-  lastName: z.string().min(1, { message: 'Last name must be at least 1 characters long' })
+  lastName: z
+    .string()
+    .trim()
+    .min(1, { message: 'Last name must be at least 1 characters long' })
     .regex(/^[a-zA-Z\s]+$/, {
       message: 'Last must contain only alphabetic characters',
     }),
   phone: z.number().min(10, 'Phone Number must be at least 10 digits').int(),
-  address: z.string().min(5, 'Address must be at least 5 characters long'),
+  address: z
+    .string()
+    .trim()
+    .min(5, 'Address must be at least 5 characters long'),
 });
 
 export const memberSchema = memberBaseSchema.extend({

@@ -6,13 +6,22 @@ import { IBook, IBookBase } from './models/book.model';
 
 export class BookRepository implements IRepository<IBookBase, IBook> {
   constructor(private readonly db: Database<LibraryDataset>) {}
+  private currentBookId = 0;
   private get books(): IBook[] {
     return this.db.table('books');
   }
+  private generateBookId() {
+    this.currentBookId = Math.max(
+      ...this.books.map((book) => book.id)
+    );
+    this.currentBookId += 1;
+    return this.currentBookId;
+  }
   async create(data: IBookBase): Promise<IBook> {
+    const bookId = this.generateBookId();
     const book: IBook = {
       ...data,
-      id: this.books.length + 1,
+      id: bookId,
       availableNumOfCopies: data.totalNumOfCopies,
     };
     this.books.push(book);

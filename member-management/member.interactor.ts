@@ -1,6 +1,6 @@
 import { IInteractor } from '../core/interactor';
 import { MemberRepository } from './member.repository';
-import { readChar, readLine } from '../core/input.utils';
+import {  readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
@@ -32,7 +32,6 @@ export class MemberInteractor implements IInteractor {
       switch (op.toLowerCase()) {
         case '1':
           await addMember(this.repo);
-
           break;
         case '2':
           await editMember(this.repo);
@@ -127,41 +126,45 @@ async function addMember(repo: MemberRepository) {
   console.table(createdMember);
 }
 async function deleteMember(repo: MemberRepository) {
-  const id = +(await readLine('Enter the ID of the book to delete: '));
+  const id = +(await readLine(
+    '\nPlease enter the ID of the member you wish to delete: '
+  ));
   const deletedMember = await repo.delete(id);
   if (deletedMember) {
-    console.log('Deleted Member:', deletedMember);
+    console.log('\nMember successfully deleted:\n', deletedMember);
   } else {
-    console.log('No members with given id');
+    console.log('\nNo member found with the given ID.');
   }
 }
 
 async function editMember(repo: MemberRepository) {
-  const id = +(await readLine('\nEnter the Id of the Member to edit :\n'));
+  const id = +(await readLine(
+    '\nPlease enter the ID of the member you wish to edit : '
+  ));
   const existingMember = await repo.getById(id);
 
   if (!existingMember) {
-    console.log('Member not Found');
+    console.log('\Member not found. Please check the ID and try again.');
     return;
   }
 
-  console.log('Existing book details:');
+  console.log('\nExisting Member details:');
   console.table(existingMember);
 
   const updatedData = await getMemberInput(existingMember);
   const updatedMember = await repo.update(id, updatedData);
 
   if (updatedMember) {
-    console.log('Member updated successfully..\n');
+    console.log('\nMember updated successfully..\n');
     console.table(updatedMember);
   } else {
-    console.log('Failed to update Member. Please try again.');
+    console.log('\nFailed to update Member. Please try again.');
   }
 }
 
 async function displayMembers(repo: MemberRepository) {
   const limit = +(await readLine(
-    'Enter the maximum number of records you want to display: '
+    '\nEnter the maximum number of records you want to display: '
   ));
   let currentPage: number = 0;
   await loadData(repo, '', limit, currentPage);
@@ -174,7 +177,7 @@ async function displayMembers(repo: MemberRepository) {
 }
 async function searchMember(repo: MemberRepository) {
   const search = await promptForValidInput(
-    'Enter the First Name/Last Name of the person whom you want to search: ',
+    '\nEnter the First Name/Last Name of the person whom you want to search: ',
     searchSchema,
     ''
   );
@@ -204,13 +207,13 @@ const loadData = async (
       members.pagination.total;
 
     if (hasPreviousPage) {
-      console.log('P:\tPrevious Page');
+      console.log('\nPress "p" for Previous Page');
     }
     if (hasNextPage) {
-      console.log('N:Next Page');
+      console.log('Press "n" for Next Page');
     }
     if (hasPreviousPage || hasNextPage) {
-      console.log('Q:\tQuit');
+      console.log('Press "q" to Quit\n');
       const askChoice = async () => {
         const op = (await readLine('\nChoice: ')).toUpperCase();
         console.log(op, '\n\n');
@@ -221,13 +224,13 @@ const loadData = async (
           currentPage++;
           await loadData(repo, search, limit, currentPage);
         } else if (op !== 'Q') {
-          console.log('Invalid Choice:\n');
+          console.log('\nInvalid Choice:\n');
           await askChoice();
         }
       };
       await askChoice();
     }
   } else {
-    console.log('\n No Data To Show');
+    console.log('\nNo data available to display at the moment.');
   }
 };
