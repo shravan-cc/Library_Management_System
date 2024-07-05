@@ -2,11 +2,13 @@ import { describe, beforeEach, test, expect } from 'vitest';
 import { MemberRepository } from './member.repository';
 import { IMember, IMemberBase } from './models/member.model';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
+import { LibraryInteractor } from '../library-interactor';
 
 describe('Tests for MemberRepository class methods', () => {
   let memberRepository: MemberRepository;
   let data: IMemberBase;
-  let db: Database;
+  let db: Database<LibraryDataset>;
 
   beforeAll(async () => {
     db = new Database('./data/dbtest.json');

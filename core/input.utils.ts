@@ -1,4 +1,5 @@
 import { emitKeypressEvents } from 'node:readline';
+import { z } from 'zod';
 
 export const readLine = (question: string): Promise<string> => {
   return new Promise((resolve) => {
@@ -19,7 +20,7 @@ export const readChar = (question: string): Promise<string> => {
     process.stdin.setRawMode(true);
     process.stdin.setEncoding('utf8');
 
-    const onData = async (key: Buffer) => {
+    const onData = (key: Buffer) => {
       process.stdin.setRawMode(false);
       process.stdin.removeListener('data', onData);
       const char = key.toString('utf-8');
@@ -32,3 +33,28 @@ export const readChar = (question: string): Promise<string> => {
     process.stdin.addListener('data', onData);
   });
 };
+
+export async function promptForValidInput<T>(
+  question: string,
+  schema: z.ZodSchema<T>,
+  defaultValue: T
+): Promise<T> {
+  let input;
+  do {
+    input = await readLine(question);
+    try {
+      if (!input && defaultValue !== undefined) {
+        return defaultValue;
+      }
+      return schema.parse(
+        schema instanceof z.ZodNumber ? Number(input) : input
+      );
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        console.log('Validation error:', e.errors[0].message);
+      } else {
+        console.log('An unknown error occurred:', e);
+      }
+    }
+  } while (true);
+}

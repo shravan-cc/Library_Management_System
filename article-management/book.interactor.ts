@@ -3,9 +3,10 @@ import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
 import { IBookBase, bookBaseSchema } from './models/book.model';
 import { Menu } from '../core/menu';
-import { z } from 'zod';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
+import { promptForValidInput } from '../core/input.utils';
+import { loadPage } from '../core/utils';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -47,31 +48,6 @@ export class BookInteractor implements IInteractor {
       }
     }
   }
-}
-
-async function promptForValidInput<T>(
-  question: string,
-  schema: z.ZodSchema<T>,
-  defaultValue: T
-): Promise<T> {
-  let input;
-  do {
-    input = await readLine(question);
-    try {
-      if (!input && defaultValue !== undefined) {
-        return defaultValue;
-      }
-      return schema.parse(
-        schema instanceof z.ZodNumber ? Number(input) : input
-      );
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        console.log('Validation error:', e.errors[0].message);
-      } else {
-        console.log('An unknown error occurred:', e);
-      }
-    }
-  } while (true);
 }
 
 async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
@@ -195,52 +171,3 @@ async function searchBook(repo: BookRepository) {
 
   await loadPage(repo, search, pageSize, currentPage);
 }
-
-const loadPage = async (
-  repo: BookRepository,
-  search: string,
-  pageSize: number,
-  currentPage: number
-) => {
-  const result = await repo.list({
-    search: search || undefined,
-    offset: currentPage * pageSize,
-    limit: pageSize,
-  });
-  if (result.items.length > 0) {
-    const totalPages = Math.ceil(result.pagination.total / pageSize);
-    console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
-    console.table(result.items);
-    const hasPreviousPage = currentPage > 0;
-
-    const hasNextPage =
-      result.pagination.offset + result.pagination.limit <
-      result.pagination.total;
-    if (hasPreviousPage) {
-      console.log('Press "p" to go to the previous page.');
-    }
-    if (hasNextPage) {
-      console.log('Press "n" to go to the next page.');
-    }
-    if (hasPreviousPage || hasNextPage) {
-      console.log('\nPress "q" to exit.\n');
-      const askChoice = async () => {
-        const op = (await readLine('\nChoice :')).toLowerCase();
-        console.log(op, '\n\n');
-        if (op === 'n' && hasNextPage) {
-          currentPage++;
-          await loadPage(repo, search, pageSize, currentPage);
-        } else if (op === 'p' && hasPreviousPage) {
-          currentPage--;
-          await loadPage(repo, search, pageSize, currentPage);
-        } else if (op !== 'q') {
-          console.log('\ninvalid choice..!!\n');
-          await askChoice();
-        }
-      };
-      await askChoice();
-    }
-  } else {
-    console.log('\nNo data available to display at the moment.');
-  }
-};

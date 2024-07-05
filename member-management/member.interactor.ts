@@ -1,11 +1,13 @@
 import { IInteractor } from '../core/interactor';
 import { MemberRepository } from './member.repository';
-import {  readLine } from '../core/input.utils';
+import { readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
+import { promptForValidInput } from '../core/input.utils';
+import { loadPage } from '../core/utils';
 
 const searchSchema = z
   .string()
@@ -53,31 +55,6 @@ export class MemberInteractor implements IInteractor {
       }
     }
   }
-}
-
-async function promptForValidInput<T>(
-  question: string,
-  schema: z.ZodSchema<T>,
-  defaultValue: T
-): Promise<T> {
-  let input;
-  do {
-    input = await readLine(question);
-    try {
-      if (!input && defaultValue !== undefined) {
-        return defaultValue;
-      }
-      return schema.parse(
-        schema instanceof z.ZodNumber ? Number(input) : input
-      );
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        console.log('Validation error:', e.errors[0].message);
-      } else {
-        console.log('An unknown error occurred:', e);
-      }
-    }
-  } while (true);
 }
 
 async function getMemberInput(
@@ -144,7 +121,7 @@ async function editMember(repo: MemberRepository) {
   const existingMember = await repo.getById(id);
 
   if (!existingMember) {
-    console.log('\Member not found. Please check the ID and try again.');
+    console.log('Member not found. Please check the ID and try again.');
     return;
   }
 
@@ -167,7 +144,7 @@ async function displayMembers(repo: MemberRepository) {
     '\nEnter the maximum number of records you want to display: '
   ));
   let currentPage: number = 0;
-  await loadData(repo, '', limit, currentPage);
+  await loadPage(repo, '', limit, currentPage);
   /*const members = (await repo.list({ limit: 100, offset: 0 })).items;
   if (members.length === 0) {
     console.log('Member not found');
@@ -183,54 +160,5 @@ async function searchMember(repo: MemberRepository) {
   );
   const limit: number = 1;
   let currentPage: number = 0;
-  await loadData(repo, search, limit, currentPage);
+  await loadPage(repo, search, limit, currentPage);
 }
-
-const loadData = async (
-  repo: MemberRepository,
-  search: string,
-  limit: number,
-  currentPage: number
-) => {
-  const members = await repo.list({
-    search: search || undefined,
-    limit: limit,
-    offset: currentPage * limit,
-  });
-  if (members.items.length > 0) {
-    const totalPages = Math.ceil(members.pagination.total / limit);
-    console.log(`\nPage ${currentPage + 1} of ${totalPages}`);
-    console.table(members.items);
-    const hasPreviousPage: boolean = currentPage > 0;
-    const hasNextPage: boolean =
-      members.pagination.offset + members.pagination.limit <
-      members.pagination.total;
-
-    if (hasPreviousPage) {
-      console.log('\nPress "p" for Previous Page');
-    }
-    if (hasNextPage) {
-      console.log('Press "n" for Next Page');
-    }
-    if (hasPreviousPage || hasNextPage) {
-      console.log('Press "q" to Quit\n');
-      const askChoice = async () => {
-        const op = (await readLine('\nChoice: ')).toUpperCase();
-        console.log(op, '\n\n');
-        if (op === 'P' && hasPreviousPage) {
-          currentPage--;
-          await loadData(repo, search, limit, currentPage);
-        } else if (op === 'N' && hasNextPage) {
-          currentPage++;
-          await loadData(repo, search, limit, currentPage);
-        } else if (op !== 'Q') {
-          console.log('\nInvalid Choice:\n');
-          await askChoice();
-        }
-      };
-      await askChoice();
-    }
-  } else {
-    console.log('\nNo data available to display at the moment.');
-  }
-};

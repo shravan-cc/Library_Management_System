@@ -27,7 +27,11 @@ export const memberBaseSchema = z.object({
     .regex(/^[a-zA-Z\s]+$/, {
       message: 'Last must contain only alphabetic characters',
     }),
-  phone: z.number().min(10, 'Phone Number must be at least 10 digits').int(),
+  phone: z
+    .number()
+    .min(1000000000, { message: 'Phone number must be at least 10 digits' })
+    .max(9999999999, { message: 'Phone number cannot exceed 10 digits' })
+    .int(),
   address: z
     .string()
     .trim()
@@ -35,7 +39,9 @@ export const memberBaseSchema = z.object({
 });
 
 export const memberSchema = memberBaseSchema.extend({
-  memberId: z.number().int({ message: 'ID must be an integer' })
+  memberId: z
+    .number()
+    .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
 });
 
