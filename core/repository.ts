@@ -10,3 +10,14 @@ export interface IRepository<
   getById(id: number): Promise<CompleteModel | null>;
   list(params: IPageRequest): Promise<IPagedResponse<CompleteModel>>;
 }
+
+export interface ITransactionRepository<
+  MutationModel,
+  CompleteModel extends MutationModel
+> {
+  issueBook(data: MutationModel): Promise<CompleteModel>;
+  returnBook(
+    transactionId: number,
+    returnDate: Date
+  ): Promise<CompleteModel | null>;
+}
