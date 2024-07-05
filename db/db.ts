@@ -3,35 +3,36 @@ import * as path from 'path';
 
 export type ColumnData = string | number | boolean | null;
 export type Row = Record<string, ColumnData>;
-export type Dataset = Record<string, Row[]>;
 
-export interface DatabaseStorageAdapter {
-  parse: (content: string) => Dataset;
-  serialize: (dataset: Dataset) => string;
+export interface DatabaseStorageAdapter<DS> {
+  parse: (content: string) => DS;
+  serialize: (dataset: DS) => string;
 }
 
-export const JsonAdapter: DatabaseStorageAdapter = {
-  parse(content: string) {
-    try {
-      return JSON.parse(content);
-    } catch (e) {
-      console.error(
-        'Given filePath is not empty and its content is not valid JSON.'
-      );
-      throw e;
-    }
-  },
-  serialize(dataset: Dataset) {
-    return JSON.stringify(dataset);
-  },
-};
+export function JsonAdapter<DS>() {
+  return {
+    parse(content: string) {
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.error(
+          'Given filePath is not empty and its content is not valid JSON.'
+        );
+        throw e;
+      }
+    },
+    serialize(dataset: DS) {
+      return JSON.stringify(dataset);
+    },
+  };
+}
 
-export class Database {
-  private dataStore: Dataset = {};
+export class Database<DS> {
+  private dataStore: DS = {} as DS;
 
   constructor(
     private readonly filePath: string,
-    private readonly adapter: DatabaseStorageAdapter = JsonAdapter
+    private readonly adapter: DatabaseStorageAdapter<DS> = JsonAdapter<DS>()
   ) {
     if (!filePath) {
       throw new Error('Missing file path argument.');
@@ -69,15 +70,15 @@ export class Database {
       } catch (err) {
         throw err;
       }
-      this.dataStore = this.adapter.parse(data);
+      this.dataStore = this.adapter.parse(data) as DS;
     }
   }
 
-  table<T>(tableName: string): T[] {
-    if (typeof this.dataStore[tableName] === 'undefined') {
-      this.dataStore[tableName] = [];
+  table<TABLE_NAME extends keyof DS>(tableName: TABLE_NAME): DS[TABLE_NAME] {
+    if (typeof (this.dataStore as any)[tableName] === 'undefined') {
+      (this.dataStore as any)[tableName] = [];
     }
-    return this.dataStore[tableName] as T[];
+    return (this.dataStore as any)[tableName];
   }
   async save() {
     try {
@@ -91,7 +92,7 @@ export class Database {
     }
   }
   async clear() {
-    this.dataStore = {};
+    this.dataStore = {} as DS;
     await this.save();
   }
 }

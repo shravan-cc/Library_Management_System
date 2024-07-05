@@ -5,6 +5,7 @@ import { BookInteractor } from './article-management/book.interactor';
 import { Menu } from './core/menu';
 import { MemberInteractor } from './member-management/member.interactor';
 import { Database } from './db/db';
+import { LibraryDataset } from './db/library-dataset';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -15,7 +16,7 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-  private readonly db = new Database('./data/db.json');
+  private readonly db = new Database<LibraryDataset>('./data/db.json');
   private readonly bookInteractor = new BookInteractor(this.db);
   private readonly memberInteractor = new MemberInteractor(this.db);
   async showMenu(): Promise<void> {
