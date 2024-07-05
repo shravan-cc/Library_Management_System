@@ -5,6 +5,7 @@ import { MemberInteractor } from './member-management/member.interactor';
 import { Database } from './db/db';
 import chalk from 'chalk';
 import { LibraryDataset } from './db/library-dataset';
+import { TransactionInteractor } from './transaction-managemet/transaction.interactor';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -18,6 +19,7 @@ export class LibraryInteractor implements IInteractor {
   private readonly db = new Database<LibraryDataset>('./data/db.json');
   private readonly bookInteractor = new BookInteractor(this.db);
   private readonly memberInteractor = new MemberInteractor(this.db);
+  private readonly transactionInteractor = new TransactionInteractor();
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'
@@ -42,6 +44,10 @@ export class LibraryInteractor implements IInteractor {
           console.log(chalk.underline.blue.bold('\tMember Menu\n'));
           await this.memberInteractor.showMenu();
           break;
+        case '3':
+          console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
+          await this.transactionInteractor.showMenu();
+          break
         case '5':
           process.exit(0);
         default:
