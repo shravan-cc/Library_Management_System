@@ -25,5 +25,13 @@ export const transactionSchema = transactionBaseSchema.extend({
   returnDate: z.date().optional(),
 });
 
+export const returnSchema = z.object({
+  transactionId: z
+    .number()
+    .int({ message: 'ID must be an integer' })
+    .positive({ message: 'ID must be a positive integer' }),
+  returnDate: z.date(),
+});
 export type ITransactionBase = z.infer<typeof transactionBaseSchema>;
 export type ITransaction = z.infer<typeof transactionSchema>;
+export type RTransaction = z.infer<typeof returnSchema>;

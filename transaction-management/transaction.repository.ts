@@ -13,10 +13,14 @@ export class TransactionRepository
     return this.db.table('transactions');
   }
   private generateId() {
-    this.currentId = Math.max(
-      ...this.transactions.map((transaction) => transaction.transactionId)
-    );
-    this.currentId += 1;
+    if (this.currentId >= 1) {
+      this.currentId = Math.max(
+        ...this.transactions.map((transaction) => transaction.transactionId)
+      );
+      this.currentId += 1;
+      return this.currentId;
+    }
+    this.currentId = 1;
     return this.currentId;
   }
   async issueBook(data: ITransactionBase): Promise<ITransaction> {
@@ -28,6 +32,10 @@ export class TransactionRepository
     this.transactions.push(transaction);
     await this.db.save();
     return transaction;
+  }
+  async getById(id: number): Promise<ITransaction | null> {
+    const transaction = this.transactions.find((t) => t.transactionId === id);
+    return transaction || null;
   }
   async returnBook(
     transactionId: number,

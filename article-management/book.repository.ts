@@ -11,8 +11,12 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     return this.db.table('books');
   }
   private generateBookId() {
-    this.currentBookId = Math.max(...this.books.map((book) => book.id));
-    this.currentBookId += 1;
+    if (this.books.length >= 1) {
+      this.currentBookId = Math.max(...this.books.map((book) => book.id));
+      this.currentBookId += 1;
+      return this.currentBookId;
+    }
+    this.currentBookId = 1;
     return this.currentBookId;
   }
   async create(data: IBookBase): Promise<IBook> {
@@ -53,6 +57,24 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
   async getById(id: number): Promise<IBook | null> {
     const book = this.books.find((b) => b.id === id);
     return book || null;
+  }
+  async handeBook(id: number): Promise<boolean> {
+    const index = this.books.findIndex((book) => book.id === id);
+
+    if (this.books[index].availableNumOfCopies > 0) {
+      console.log('Book Issued');
+      this.books[index].availableNumOfCopies -= 1;
+      this.db.save();
+    } else {
+      //console.log('There is no copies available for this book');
+      return false;
+    }
+    return true;
+  }
+  async returnBook(id: number): Promise<void> {
+    const index = this.books.findIndex((book) => book.id === id);
+    this.books[index].availableNumOfCopies += 1;
+    this.db.save();
   }
   async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
     const search = params.search?.toLowerCase();
