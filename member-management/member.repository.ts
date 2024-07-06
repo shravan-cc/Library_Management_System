@@ -11,8 +11,14 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     return this.db.table('members');
   }
   private generateId() {
-    this.currentId = Math.max(...this.members.map((member) => member.memberId));
-    this.currentId += 1;
+    if (this.members.length >= 1) {
+      this.currentId = Math.max(
+        ...this.members.map((member) => member.memberId)
+      );
+      this.currentId += 1;
+      return this.currentId;
+    }
+    this.currentId = 1;
     return this.currentId;
   }
   async create(data: IMemberBase): Promise<IMember> {

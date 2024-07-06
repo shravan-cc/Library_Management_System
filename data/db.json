@@ -41,6 +41,13 @@
       "phone": "9678454532",
       "address": "Australlia",
       "memberId": 7
+    },
+    {
+      "firstName": "Gautam",
+      "lastName": "Gambhir",
+      "phone": 8797676234,
+      "address": "Delhi",
+      "memberId": 8
     }
   ],
   "books": [
@@ -53,7 +60,7 @@
       "numOfPages": 180,
       "totalNumOfCopies": 5,
       "id": 1,
-      "availableNumOfCopies": 5
+      "availableNumOfCopies": 6
     },
     {
       "title": "Crime and Punishment",
@@ -64,7 +71,7 @@
       "numOfPages": 545,
       "totalNumOfCopies": 23,
       "id": 3,
-      "availableNumOfCopies": 23
+      "availableNumOfCopies": 11
     },
     {
       "title": "To Kill a Mockingbird",
@@ -75,7 +82,7 @@
       "numOfPages": 547,
       "totalNumOfCopies": 12,
       "id": 4,
-      "availableNumOfCopies": 12
+      "availableNumOfCopies": 0
     }
   ]
 }
