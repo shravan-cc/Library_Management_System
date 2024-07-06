@@ -7,6 +7,7 @@ import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
+import chalk from 'chalk';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -44,7 +45,7 @@ export class BookInteractor implements IInteractor {
           loop = false;
           break;
         default:
-          console.log('Invalid Choice!!');
+          console.log(chalk.redBright('\nInvalid Choice !!!\n'));
       }
     }
   }

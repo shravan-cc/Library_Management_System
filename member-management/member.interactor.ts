@@ -8,6 +8,7 @@ import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
+import chalk from 'chalk';
 
 const searchSchema = z
   .string()
@@ -51,7 +52,7 @@ export class MemberInteractor implements IInteractor {
           loop = false;
           break;
         default:
-          console.log('Invalid Choice!!');
+          console.log(chalk.redBright('\nInvalid Choice !!!\n'));
       }
     }
   }
