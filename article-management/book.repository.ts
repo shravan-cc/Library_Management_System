@@ -58,24 +58,26 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     const book = this.books.find((b) => b.id === id);
     return book || null;
   }
-  async handeBook(id: number): Promise<boolean> {
+
+  async handleBook(id: number): Promise<boolean> {
     const index = this.books.findIndex((book) => book.id === id);
 
     if (this.books[index].availableNumOfCopies > 0) {
       console.log('Book Issued');
       this.books[index].availableNumOfCopies -= 1;
       this.db.save();
-    } else {
-      //console.log('There is no copies available for this book');
-      return false;
+      return true;
     }
-    return true;
+    console.log('Book is not available');
+    return false;
   }
+
   async returnBook(id: number): Promise<void> {
     const index = this.books.findIndex((book) => book.id === id);
     this.books[index].availableNumOfCopies += 1;
     this.db.save();
   }
+
   async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
     const search = params.search?.toLowerCase();
     const filteredBooks = search

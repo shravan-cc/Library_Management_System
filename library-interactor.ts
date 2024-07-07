@@ -6,6 +6,7 @@ import { Database } from './db/db';
 import chalk from 'chalk';
 import { LibraryDataset } from './db/library-dataset';
 import { TransactionInteractor } from './transaction-management/transaction.interactor';
+import { join } from 'path';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -16,7 +17,9 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-  private readonly db = new Database<LibraryDataset>('./data/db.json');
+  private readonly db = new Database<LibraryDataset>(
+    join(__dirname, './data/db.json')
+  );
   private readonly bookInteractor = new BookInteractor(this.db);
   private readonly memberInteractor = new MemberInteractor(this.db);
   private readonly transactionInteractor = new TransactionInteractor(this.db);

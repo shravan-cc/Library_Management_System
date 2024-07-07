@@ -1,6 +1,6 @@
 import { BookRepository } from '../article-management/book.repository';
 import { MemberRepository } from '../member-management/member.repository';
-import { readChar, readLine } from './input.utils';
+import { readChar } from './input.utils';
 
 export const loadPage = async (
   repo: MemberRepository | BookRepository,
@@ -50,4 +50,11 @@ export const loadPage = async (
   } else {
     console.log('\nNo data available to display at the moment.');
   }
+};
+
+export const formatDate = (date: Date): string => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 };

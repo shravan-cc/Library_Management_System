@@ -1,4 +1,8 @@
-import { ITransaction, ITransactionBase } from './models/transaction.model';
+import {
+  ITransaction,
+  ITransactionBase,
+  RTransaction,
+} from './models/transaction.model';
 import { ITransactionRepository } from '../core/repository';
 // import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { Database } from '../db/db';
@@ -13,7 +17,7 @@ export class TransactionRepository
     return this.db.table('transactions');
   }
   private generateId() {
-    if (this.currentId >= 1) {
+    if (this.transactions.length >= 1) {
       this.currentId = Math.max(
         ...this.transactions.map((transaction) => transaction.transactionId)
       );
@@ -33,13 +37,15 @@ export class TransactionRepository
     await this.db.save();
     return transaction;
   }
+
   async getById(id: number): Promise<ITransaction | null> {
     const transaction = this.transactions.find((t) => t.transactionId === id);
     return transaction || null;
   }
+
   async returnBook(
     transactionId: number,
-    returnDate: Date
+    returnDate: string
   ): Promise<ITransaction | null> {
     const index = this.transactions.findIndex(
       (t) => t.transactionId === transactionId

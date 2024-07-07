@@ -1,9 +1,9 @@
 import { describe, beforeEach, test, expect } from 'vitest';
 import { MemberRepository } from './member.repository';
-import { IMember, IMemberBase } from './models/member.model';
+import { IMemberBase } from './models/member.model';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
-import { LibraryInteractor } from '../library-interactor';
+import { join } from 'path';
 
 describe('Tests for MemberRepository class methods', () => {
   let memberRepository: MemberRepository;
@@ -11,7 +11,7 @@ describe('Tests for MemberRepository class methods', () => {
   let db: Database<LibraryDataset>;
 
   beforeAll(async () => {
-    db = new Database('./data/dbtest.json');
+    db = new Database(join(__dirname, './data/dbtest.json'));
     await db.clear();
   });
   beforeEach(async () => {

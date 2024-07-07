@@ -1,5 +1,7 @@
 import { emitKeypressEvents } from 'node:readline';
 import { z } from 'zod';
+import { BookRepository } from '../article-management/book.repository';
+import { MemberRepository } from '../member-management/member.repository';
 
 export const readLine = (question: string): Promise<string> => {
   return new Promise((resolve) => {
@@ -34,15 +36,49 @@ export const readChar = (question: string): Promise<string> => {
   });
 };
 
+export type Repository = BookRepository | MemberRepository;
+
 export async function promptForValidInput<T>(
   question: string,
   schema: z.ZodSchema<T>,
-  defaultValue: T
+  defaultValue?: T,
+  repo?: Repository
 ): Promise<T> {
   let input;
   do {
     input = await readLine(question);
     try {
+      if (repo) {
+        const id = Number(input);
+        const recordExists = await repo.getById(id);
+        if (recordExists && repo instanceof BookRepository) {
+          console.log(`Book Details`);
+          console.table(recordExists);
+          const confirmation = await readLine(
+            'Is this the book you are looking for? (yes/no): '
+          );
+          if (
+            confirmation.toLowerCase() !== 'yes' &&
+            confirmation.toLowerCase() !== 'y'
+          ) {
+            continue;
+          }
+          const bookAvailable = await repo.handleBook(id);
+          if (!bookAvailable) {
+            console.log('There are no copies available for this book');
+            continue;
+          }
+        }
+        if (!recordExists) {
+          console.log(
+            `${
+              repo instanceof MemberRepository ? 'Member' : 'Book'
+            } with this particular Id does not exist`
+          );
+          continue;
+        }
+      }
+
       if (!input && defaultValue !== undefined) {
         return defaultValue;
       }
