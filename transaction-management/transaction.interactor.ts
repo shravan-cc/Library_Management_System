@@ -121,10 +121,16 @@ async function returnBook(
     transaction.transactionId,
     transaction.returnDate
   );
+
   if (returnedBookTransaction) {
     bookRepo.returnBook(returnedBookTransaction.bookId);
+    const book = await bookRepo.getById(returnedBookTransaction.bookId);
     console.log(
-      `Book successfully returned!! on ${returnedBookTransaction.returnDate}`
+      `Book [${book?.title}] successfully returned!! on ${returnedBookTransaction.returnDate}`
+    );
+  } else {
+    console.log(
+      'Book of this particular transaction Id has already been returned'
     );
   }
 }
@@ -137,14 +143,10 @@ async function displayTransaction(repo: TransactionRepository) {
   );
   const transaction = await repo.getById(transactionId);
   if (transaction) {
-    console.log('Transaction Details:');
-    console.log(`Transaction ID: ${transaction.transactionId}`);
-    console.log(`Member ID: ${transaction.memberId}`);
-    console.log(`Book ID: ${transaction.bookId}`);
-    console.log(`Borrow Date: ${transaction.borrowDate}`);
-    console.log(`Due Date: ${transaction.dueDate}`);
+    console.log('Transaction Details:\n');
+    console.table(transaction);
     if (transaction.returnDate) {
-      console.log(`Return Date: ${transaction.returnDate}`);
+      console.log(`The Book was returned on: ${transaction.returnDate}`);
     } else {
       console.log('The book has not been returned yet.');
     }

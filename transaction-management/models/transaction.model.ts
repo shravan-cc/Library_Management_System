@@ -19,6 +19,7 @@ export const transactionSchema = transactionBaseSchema.extend({
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
   returnDate: z.string().default('-').optional(),
+  status: z.string(),
 });
 
 export const returnSchema = z.object({

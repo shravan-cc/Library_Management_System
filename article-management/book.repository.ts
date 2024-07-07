@@ -68,7 +68,6 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
       this.db.save();
       return true;
     }
-    console.log('Book is not available');
     return false;
   }
 

@@ -32,6 +32,7 @@ export class TransactionRepository
     const transaction: ITransaction = {
       ...data,
       transactionId: id,
+      status: 'Not returned',
     };
     this.transactions.push(transaction);
     await this.db.save();
@@ -53,7 +54,11 @@ export class TransactionRepository
     if (index === -1) {
       return null;
     }
-    this.transactions[index].returnDate = returnDate;
-    return this.transactions[index];
+    if (this.transactions[index].status === 'Not returned') {
+      this.transactions[index].returnDate = returnDate;
+      this.transactions[index].status = 'Returned';
+      return this.transactions[index];
+    }
+    return null;
   }
 }
