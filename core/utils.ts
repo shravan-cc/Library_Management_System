@@ -1,9 +1,10 @@
 import { BookRepository } from '../article-management/book.repository';
 import { MemberRepository } from '../member-management/member.repository';
+import { TransactionRepository } from '../transaction-management/transaction.repository';
 import { readChar } from './input.utils';
 
 export const loadPage = async (
-  repo: MemberRepository | BookRepository,
+  repo: MemberRepository | BookRepository | TransactionRepository,
   search: string,
   limit: number,
   currentPage: number

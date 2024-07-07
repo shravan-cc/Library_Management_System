@@ -69,7 +69,7 @@ export async function promptForValidInput<T>(
             continue;
           }
         }
-        if (!recordExists) {
+        if (!recordExists && !isNaN(Number(input))) {
           console.log(
             `${
               repo instanceof MemberRepository ? 'Member' : 'Book'

@@ -7,6 +7,7 @@ import { ITransactionRepository } from '../core/repository';
 // import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
+import { IPagedResponse, IPageRequest } from '../core/pagination.response';
 
 export class TransactionRepository
   implements ITransactionRepository<ITransactionBase, ITransaction>
@@ -32,6 +33,7 @@ export class TransactionRepository
     const transaction: ITransaction = {
       ...data,
       transactionId: id,
+      status: 'Not returned',
     };
     this.transactions.push(transaction);
     await this.db.save();
@@ -53,7 +55,24 @@ export class TransactionRepository
     if (index === -1) {
       return null;
     }
-    this.transactions[index].returnDate = returnDate;
-    return this.transactions[index];
+    if (this.transactions[index].status === 'Not returned') {
+      this.transactions[index].returnDate = returnDate;
+      this.transactions[index].status = 'Returned';
+      return this.transactions[index];
+    }
+    return null;
+  }
+  async list(params: IPageRequest): Promise<IPagedResponse<ITransactionBase>> {
+    return {
+      items: this.transactions.slice(
+        params.offset,
+        params.offset + params.limit
+      ),
+      pagination: {
+        offset: params.offset,
+        limit: params.limit,
+        total: this.transactions.length,
+      },
+    };
   }
 }
