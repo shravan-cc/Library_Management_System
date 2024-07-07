@@ -7,6 +7,7 @@ import { ITransactionRepository } from '../core/repository';
 // import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
+import { IPagedResponse, IPageRequest } from '../core/pagination.response';
 
 export class TransactionRepository
   implements ITransactionRepository<ITransactionBase, ITransaction>
@@ -60,5 +61,18 @@ export class TransactionRepository
       return this.transactions[index];
     }
     return null;
+  }
+  async list(params: IPageRequest): Promise<IPagedResponse<ITransactionBase>> {
+    return {
+      items: this.transactions.slice(
+        params.offset,
+        params.offset + params.limit
+      ),
+      pagination: {
+        offset: params.offset,
+        limit: params.limit,
+        total: this.transactions.length,
+      },
+    };
   }
 }
