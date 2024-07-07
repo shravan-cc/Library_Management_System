@@ -1,9 +1,5 @@
 import { date, z } from 'zod';
 
-const today = new Date();
-const defaultDueDate = new Date(today);
-defaultDueDate.setDate(today.getDate() + 7);
-
 export const transactionBaseSchema = z.object({
   memberId: z
     .number()
@@ -13,8 +9,8 @@ export const transactionBaseSchema = z.object({
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
-  borrowDate: z.date().default(new Date()),
-  dueDate: z.date().default(defaultDueDate),
+  borrowDate: z.string(),
+  dueDate: z.string(),
 });
 
 export const transactionSchema = transactionBaseSchema.extend({
@@ -22,7 +18,7 @@ export const transactionSchema = transactionBaseSchema.extend({
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
-  returnDate: z.date().optional(),
+  returnDate: z.string().default('-').optional(),
 });
 
 export const returnSchema = z.object({
@@ -30,7 +26,7 @@ export const returnSchema = z.object({
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
-  returnDate: z.date(),
+  returnDate: z.string().default('-'),
 });
 export type ITransactionBase = z.infer<typeof transactionBaseSchema>;
 export type ITransaction = z.infer<typeof transactionSchema>;

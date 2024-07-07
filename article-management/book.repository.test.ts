@@ -1,14 +1,16 @@
+import { join } from 'path';
 import { Database } from '../db/db';
+import { LibraryDataset } from '../db/library-dataset';
 import { BookRepository } from './book.repository';
 import { IBookBase } from './models/book.model';
 
 describe('BookRepository Tests', () => {
   let books: IBookBase[];
   let bookRepository: BookRepository;
-  let db: Database;
+  let db: Database<LibraryDataset>;
 
   beforeAll(async () => {
-    db = new Database('./data/dbtest.json');
+    db = new Database(join(__dirname, './data/dbtest.json'));
     await db.clear();
   });
   beforeEach(() => {

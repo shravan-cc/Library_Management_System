@@ -4,17 +4,17 @@ import { Menu } from '../core/menu';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { TransactionRepository } from './transaction.repository';
+import { z } from 'zod';
+import { BookRepository } from '../article-management/book.repository';
+import { MemberRepository } from '../member-management/member.repository';
+import { promptForValidInput } from '../core/input.utils';
 import {
   ITransactionBase,
   transactionBaseSchema,
   RTransaction,
   returnSchema,
 } from './models/transaction.model';
-import { z } from 'zod';
-import { ReadLine } from 'readline';
-import { BookRepository } from '../article-management/book.repository';
-import { MemberRepository } from '../member-management/member.repository';
-import { promptForValidInput, readLine } from '../core/input.utils';
+import { formatDate } from '../core/utils';
 
 const menu = new Menu([
   { key: '1', label: 'Issue A Book' },
@@ -52,71 +52,20 @@ export class TransactionInteractor implements IInteractor {
   }
 }
 
-async function validateInput<T>(
-  question: string,
-  schema: z.ZodSchema<T>,
-  defaultValue: T,
-  memberRepo?: MemberRepository,
-  bookRepo?: BookRepository
-): Promise<T> {
-  while (true) {
-    try {
-      const input = await readLine(question);
-
-      if (memberRepo && !bookRepo) {
-        const memberExists = await memberRepo.getById(Number(input));
-        if (!memberExists && !isNaN(Number(input))) {
-          console.log('There is no member with particular Id');
-          continue;
-        }
-      }
-
-      if (bookRepo) {
-        const bookId = Number(input);
-        const bookExists = await bookRepo.getById(bookId);
-        if (!bookExists && !isNaN(Number(input))) {
-          console.log('Book with particular Id does not exist');
-          continue;
-        }
-
-        const bookAvailable = await bookRepo.handeBook(bookId);
-        if (!bookAvailable) {
-          console.log('There are no copies available for this book');
-          continue;
-        }
-      }
-      if (!input && defaultValue !== undefined) {
-        return defaultValue;
-      }
-
-      return schema.parse(
-        schema instanceof z.ZodNumber ? Number(input) : input
-      );
-    } catch (e: any) {
-      if (e instanceof z.ZodError) {
-        console.log('Validation error:', e.errors[0].message);
-      } else {
-        console.log('An unknown error occurred:', e.message);
-      }
-    }
-  }
-}
-
 async function getTransactionInput(
   bookRepo: BookRepository,
   memberRepo: MemberRepository
 ): Promise<ITransactionBase> {
-  const memberId = await validateInput(
+  const memberId = await promptForValidInput(
     'Please enter your member Id: ',
     transactionBaseSchema.shape.memberId,
-    0,
+    undefined,
     memberRepo
   );
-  const bookId = await validateInput(
+  const bookId = await promptForValidInput(
     'Please enter the Id of the book: ',
     transactionBaseSchema.shape.bookId,
-    0,
-    memberRepo,
+    undefined,
     bookRepo
   );
   const today = new Date();
@@ -125,8 +74,8 @@ async function getTransactionInput(
   return {
     memberId: memberId,
     bookId: bookId,
-    borrowDate: borrowDate,
-    dueDate: dueDate,
+    borrowDate: formatDate(borrowDate),
+    dueDate: formatDate(dueDate),
   };
 }
 
@@ -147,7 +96,7 @@ async function getReturnBookInputs(
       const returnDate = new Date();
       return {
         transactionId: transactionId,
-        returnDate: returnDate,
+        returnDate: formatDate(returnDate),
       };
     }
   }
@@ -160,7 +109,7 @@ async function issueBook(
 ) {
   const transaction = await getTransactionInput(bookRepo, memberRepo);
   const createdTransaction = await repo.issueBook(transaction);
-  console.log(createdTransaction);
+  console.table(createdTransaction);
 }
 
 async function returnBook(

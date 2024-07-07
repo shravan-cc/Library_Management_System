@@ -18,6 +18,6 @@ export interface ITransactionRepository<
   issueBook(data: MutationModel): Promise<CompleteModel>;
   returnBook(
     transactionId: number,
-    returnDate: Date
+    returnDate: string
   ): Promise<CompleteModel | null>;
 }
