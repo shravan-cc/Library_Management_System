@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { IRepository } from '../core/repository';
 import { Database } from '../db/db';
@@ -63,7 +64,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     const index = this.books.findIndex((book) => book.id === id);
 
     if (this.books[index].availableNumOfCopies > 0) {
-      console.log('Book Issued');
+      console.log(chalk.greenBright('Book issued successfully.'));
       this.books[index].availableNumOfCopies -= 1;
       this.db.save();
       return true;

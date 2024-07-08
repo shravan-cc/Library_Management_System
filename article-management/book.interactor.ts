@@ -45,7 +45,9 @@ export class BookInteractor implements IInteractor {
           loop = false;
           break;
         default:
-          console.log(chalk.redBright('\nInvalid Choice !!!\n'));
+          console.log(
+            chalk.redBright('\nInvalid Choice! Please select a valid option.\n')
+          );
       }
     }
   }
@@ -53,53 +55,67 @@ export class BookInteractor implements IInteractor {
 
 async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
   const title = await promptForValidInput(
-    `Please enter title${
-      existingData?.title ? ` (${existingData.title})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter title${
+        existingData?.title ? ` (${existingData.title})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.title,
     existingData?.title
   );
   const author = await promptForValidInput(
-    `Please enter author${
-      existingData?.author ? ` (${existingData.author})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter author${
+        existingData?.author ? ` (${existingData.author})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.author,
     existingData?.author
   );
   const publisher = await promptForValidInput(
-    `Please enter publisher${
-      existingData?.publisher ? ` (${existingData.publisher})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter publisher${
+        existingData?.publisher ? ` (${existingData.publisher})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.publisher,
     existingData?.publisher
   );
   const genre = await promptForValidInput(
-    `Please enter genre${
-      existingData?.genre ? ` (${existingData.genre})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter genre${
+        existingData?.genre ? ` (${existingData.genre})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.genre,
     existingData?.genre
   );
   const isbnNo = await promptForValidInput(
-    `Please enter ISBN Number${
-      existingData?.isbnNo ? ` (${existingData.isbnNo})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter ISBN Number${
+        existingData?.isbnNo ? ` (${existingData.isbnNo})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.isbnNo,
     existingData?.isbnNo
   );
   const numOfPages = await promptForValidInput(
-    `Please enter total num of pages${
-      existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter total num of pages${
+        existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
+      }: `
+    ),
     bookBaseSchema.shape.numOfPages,
     existingData?.numOfPages
   );
   const totalNumOfCopies = await promptForValidInput(
-    `Please enter the total num of copies${
-      existingData?.totalNumOfCopies
-        ? ` (${existingData.totalNumOfCopies})`
-        : ''
-    }: `,
+    chalk.cyan(
+      `Please enter the total num of copies${
+        existingData?.totalNumOfCopies
+          ? ` (${existingData.totalNumOfCopies})`
+          : ''
+      }: `
+    ),
     bookBaseSchema.shape.totalNumOfCopies,
     existingData?.totalNumOfCopies
   );
@@ -118,46 +134,53 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
 async function addBook(repo: BookRepository) {
   const book: IBookBase = await getBookInput();
   const createdBook = await repo.create(book);
-  console.log('\nBook added successfully!\n');
+  console.log(chalk.greenBright('\nBook added successfully!\n'));
   console.table(createdBook);
 }
 
 async function editBook(repo: BookRepository) {
-  const id = +(await readLine('\nEnter the ID of the book to edit : '));
+  const id = +(await readLine(
+    chalk.cyan('\nEnter the ID of the book to edit: ')
+  ));
   const existingBook = await repo.getById(id);
 
   if (!existingBook) {
-    console.log('\nBook not found. Please check the ID and try again.');
+    console.log(
+      chalk.redBright('\nBook not found. Please check the ID and try again.\n')
+    );
     return;
   }
 
-  console.log('Existing book details:');
+  console.log(chalk.blueBright('Existing book details:'));
   console.table(existingBook);
 
   const updatedData = await getBookInput(existingBook);
   const updatedBook = await repo.update(id, updatedData);
 
   if (updatedBook) {
-    console.log('\nBook updated successfully!\n');
+    console.log(chalk.greenBright('\nBook updated successfully!\n'));
     console.table(updatedBook);
   } else {
-    console.log('Failed to update book. Please try again.');
+    console.log(chalk.redBright('Failed to update book. Please try again.\n'));
   }
 }
 
 async function deleteBook(repo: BookRepository) {
-  const id = +(await readLine('\nEnter the ID of the book to delete : '));
+  const id = +(await readLine(
+    chalk.cyan('\nEnter the ID of the book to delete: ')
+  ));
   const deletedBook = await repo.delete(id);
   if (deletedBook) {
-    console.log('\nBook successfully deleted :\n', deletedBook);
+    console.log(chalk.greenBright('\nBook successfully deleted :\n'));
+    console.table(deletedBook);
   } else {
-    console.log('\nNo book found with the given ID.');
+    console.log(chalk.redBright('\nNo book found with the given ID.\n'));
   }
 }
 
 async function displayBooks(repo: BookRepository) {
   const pageSize: number = +(await readLine(
-    '\nEnter the maximum number of record you want to display :'
+    chalk.cyan('\nEnter the maximum number of records you want to display: ')
   ));
   let currentPage: number = 0;
   await loadPage(repo, '', pageSize, currentPage);
@@ -165,7 +188,9 @@ async function displayBooks(repo: BookRepository) {
 
 async function searchBook(repo: BookRepository) {
   const search = await readLine(
-    '\nEnter the Title/isbnNO of the book which you want to search: ' || ''
+    chalk.cyan(
+      '\nEnter the Title/isbnNO of the book which you want to search: ' || ''
+    )
   );
   const pageSize = 5;
   let currentPage = 0;
