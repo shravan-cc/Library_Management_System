@@ -52,7 +52,7 @@ export class MemberInteractor implements IInteractor {
           loop = false;
           break;
         default:
-          console.log(chalk.redBright('\nInvalid Choice !!!\n'));
+          chalk.redBright('\nInvalid Choice! Please select a valid option.\n');
       }
     }
   }
@@ -62,31 +62,39 @@ async function getMemberInput(
   existingData?: IMemberBase
 ): Promise<IMemberBase> {
   const firstName = await promptForValidInput(
-    `Please enter First Name${
-      existingData?.firstName ? ` (${existingData.firstName})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter First Name${
+        existingData?.firstName ? ` (${existingData.firstName})` : ''
+      }: `
+    ),
     memberBaseSchema.shape.firstName,
     existingData?.firstName
   );
   const lastName = await promptForValidInput(
-    `Please enter Last Name${
-      existingData?.lastName ? ` (${existingData.lastName})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter Last Name${
+        existingData?.lastName ? ` (${existingData.lastName})` : ''
+      }: `
+    ),
     memberBaseSchema.shape.lastName,
     existingData?.lastName
   );
   const phone = await promptForValidInput(
-    `Please enter Phone Number${
-      existingData?.phone ? ` (${existingData.phone})` : ''
-    }: `,
+    chalk.cyan(
+      `Please enter Phone Number${
+        existingData?.phone ? ` (${existingData.phone})` : ''
+      }: `
+    ),
     memberBaseSchema.shape.phone,
     existingData?.phone
   );
 
   const address = await promptForValidInput(
-    `Please provide your address${
-      existingData?.address ? ` (${existingData.address})` : ''
-    }: `,
+    chalk.cyan(
+      `Please provide your address${
+        existingData?.address ? ` (${existingData.address})` : ''
+      }: `
+    ),
     memberBaseSchema.shape.address,
     existingData?.address
   );
@@ -100,49 +108,56 @@ async function getMemberInput(
 async function addMember(repo: MemberRepository) {
   const member: IMemberBase = await getMemberInput();
   const createdMember = await repo.create(member);
-  console.log('Member Added successfully..\n');
+  console.log(chalk.greenBright('\nMember added successfully!\n'));
   console.table(createdMember);
 }
 async function deleteMember(repo: MemberRepository) {
   const id = +(await readLine(
-    '\nPlease enter the ID of the member you wish to delete: '
+    chalk.cyan('\nPlease enter the ID of the member you wish to delete: ')
   ));
   const deletedMember = await repo.delete(id);
   if (deletedMember) {
-    console.log('\nMember successfully deleted:\n', deletedMember);
+    console.log(chalk.greenBright('\nMember successfully deleted:\n'));
+    console.table(deletedMember);
   } else {
-    console.log('\nNo member found with the given ID.');
+    console.log(chalk.redBright('\nNo member found with the given ID.\n'));
   }
 }
 
 async function editMember(repo: MemberRepository) {
   const id = +(await readLine(
-    '\nPlease enter the ID of the member you wish to edit : '
+    chalk.cyan('\nPlease enter the ID of the member you wish to edit : ')
   ));
   const existingMember = await repo.getById(id);
 
   if (!existingMember) {
-    console.log('Member not found. Please check the ID and try again.');
+    console.log(
+      chalk.redBright(
+        '\nMember not found. Please check the ID and try again.\n'
+      )
+    );
     return;
   }
 
-  console.log('\nExisting Member details:');
+  console.log(chalk.blueBright('\nExisting Member details:'));
   console.table(existingMember);
 
   const updatedData = await getMemberInput(existingMember);
   const updatedMember = await repo.update(id, updatedData);
 
   if (updatedMember) {
-    console.log('\nMember updated successfully..\n');
+    console.log(chalk.greenBright('\nMember updated successfully!\n'));
     console.table(updatedMember);
   } else {
-    console.log('\nFailed to update Member. Please try again.');
+    console.log(
+      chalk.redBright('\nFailed to update member. Please try again.\n')
+    );
   }
 }
 
 async function displayMembers(repo: MemberRepository) {
   const limit = +(await readLine(
-    '\nEnter the maximum number of records you want to display: '
+    chalk.cyan('\nEnter the maximum number of records you want to display: ')
   ));
   let currentPage: number = 0;
   await loadPage(repo, '', limit, currentPage);
@@ -155,7 +170,9 @@ async function displayMembers(repo: MemberRepository) {
 }
 async function searchMember(repo: MemberRepository) {
   const search = await promptForValidInput(
-    '\nEnter the First Name/Last Name of the person whom you want to search: ',
+    chalk.cyan(
+      '\nEnter the First Name/Last Name of the person whom you want to search: '
+    ),
     searchSchema,
     ''
   );
