@@ -2,6 +2,7 @@ import { emitKeypressEvents } from 'node:readline';
 import { z } from 'zod';
 import { BookRepository } from '../article-management/book.repository';
 import { MemberRepository } from '../member-management/member.repository';
+import chalk from 'chalk';
 
 export const readLine = (question: string): Promise<string> => {
   return new Promise((resolve) => {
@@ -46,16 +47,16 @@ export async function promptForValidInput<T>(
 ): Promise<T> {
   let input;
   do {
-    input = await readLine(question);
+    input = await readLine(chalk.yellow(question));
     try {
       if (repo) {
         const id = Number(input);
         const recordExists = await repo.getById(id);
         if (recordExists && repo instanceof BookRepository) {
-          console.log(`Book Details`);
+          console.log(chalk.blue('Book Details'));
           console.table(recordExists);
           const confirmation = await readLine(
-            'Is this the book you are looking for? (yes/no): '
+            chalk.yellow('Is this the book you are looking for? (yes/no): ')
           );
           if (
             confirmation.toLowerCase() !== 'yes' &&
@@ -65,15 +66,19 @@ export async function promptForValidInput<T>(
           }
           const bookAvailable = await repo.handleBook(id);
           if (!bookAvailable) {
-            console.log('There are no copies available for this book');
+            console.log(
+              chalk.red('There are no copies available for this book')
+            );
             continue;
           }
         }
         if (!recordExists && !isNaN(Number(input))) {
           console.log(
-            `${
-              repo instanceof MemberRepository ? 'Member' : 'Book'
-            } with this particular Id does not exist`
+            chalk.red(
+              `${
+                repo instanceof MemberRepository ? 'Member' : 'Book'
+              } with this particular ID does not exist`
+            )
           );
           continue;
         }
@@ -87,9 +92,9 @@ export async function promptForValidInput<T>(
       );
     } catch (e) {
       if (e instanceof z.ZodError) {
-        console.log('Validation error:', e.errors[0].message);
+        console.log(chalk.red('Validation error:'), e.errors[0].message);
       } else {
-        console.log('An unknown error occurred:', e);
+        console.log(chalk.red('An unknown error occurred:'), e);
       }
     }
   } while (true);
