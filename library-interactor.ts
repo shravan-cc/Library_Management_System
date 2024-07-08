@@ -12,8 +12,7 @@ const menu = new Menu([
   { key: '1', label: 'Book Management' },
   { key: '2', label: 'Member Management' },
   { key: '3', label: 'Transaction' },
-  { key: '4', label: "Today's due list" },
-  { key: '5', label: 'Exit' },
+  { key: '4', label: 'Exit' },
 ]);
 
 export class LibraryInteractor implements IInteractor {
@@ -51,7 +50,7 @@ export class LibraryInteractor implements IInteractor {
           console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
           await this.transactionInteractor.showMenu();
           break;
-        case '5':
+        case '4':
           process.exit(0);
         default:
           console.log(chalk.redBright('\nInvalid choice!'));
