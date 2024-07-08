@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { BookRepository } from '../article-management/book.repository';
 import { MemberRepository } from '../member-management/member.repository';
 import { TransactionRepository } from '../transaction-management/transaction.repository';
@@ -24,13 +25,13 @@ export const loadPage = async (
       members.pagination.total;
 
     if (hasPreviousPage) {
-      console.log('Press "←" : Previous Page');
+      console.log(chalk.blue('Press "←" : Previous Page'));
     }
     if (hasNextPage) {
-      console.log('Press "→" : Next Page');
+      console.log(chalk.blue('Press "→" : Next Page'));
     }
     if (hasPreviousPage || hasNextPage) {
-      console.log('Press "q" to Quit');
+      console.log(chalk.yellow('Press "q" to Quit'));
       const askChoice = async () => {
         const key: any = await readChar('');
         const op = key.toString('utf-8');
@@ -42,14 +43,14 @@ export const loadPage = async (
           currentPage++;
           await loadPage(repo, search, limit, currentPage);
         } else if (op !== 'q' && op !== 'Q') {
-          console.log('\nInvalid Choice:\n');
+          console.log(chalk.red('\nInvalid Choice:\n'));
           await askChoice();
         }
       };
       await askChoice();
     }
   } else {
-    console.log('\nNo data available to display at the moment.');
+    console.log(chalk.red('\nNo data available to display at the moment.'));
   }
 };
 
