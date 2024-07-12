@@ -47,12 +47,12 @@ export const bookBaseSchema = z.object({
   isbnNo: z
     .string()
     .length(13, { message: 'ISBN Number must be exactly 13 characters long' }),
-  numOfPages: z
+  pages: z
     .number()
     .int({ message: 'Number of pages must be an integer' })
     .positive({ message: 'Number of pages must be a positive integer' })
     .min(1, { message: 'Number of pages must be at least 1' }),
-  totalNumOfCopies: z
+  totalCopies: z
     .number()
     .int({ message: 'Total number of copies must be an integer' })
     .min(1, { message: 'Number of pages must be at least 1' })
@@ -64,7 +64,7 @@ export const bookSchema = bookBaseSchema.extend({
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
-  availableNumOfCopies: z
+  availableCopies: z
     .number()
     .int({ message: 'Available number of copies must be an integer' })
     .nonnegative({

@@ -45,7 +45,6 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
-data/db.json
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -146,4 +145,6 @@ data/
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-data/*.json
+data/
+
+*.yaml
