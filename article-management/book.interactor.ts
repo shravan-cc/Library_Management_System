@@ -99,25 +99,23 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
     bookBaseSchema.shape.isbnNo,
     existingData?.isbnNo
   );
-  const numOfPages = await promptForValidInput(
+  const pages = await promptForValidInput(
     chalk.cyan(
       `Please enter total num of pages${
-        existingData?.numOfPages ? ` (${existingData.numOfPages})` : ''
+        existingData?.pages ? ` (${existingData.pages})` : ''
       }: `
     ),
-    bookBaseSchema.shape.numOfPages,
-    existingData?.numOfPages
+    bookBaseSchema.shape.pages,
+    existingData?.pages
   );
-  const totalNumOfCopies = await promptForValidInput(
+  const totalCopies = await promptForValidInput(
     chalk.cyan(
       `Please enter the total num of copies${
-        existingData?.totalNumOfCopies
-          ? ` (${existingData.totalNumOfCopies})`
-          : ''
+        existingData?.totalCopies ? ` (${existingData.totalCopies})` : ''
       }: `
     ),
-    bookBaseSchema.shape.totalNumOfCopies,
-    existingData?.totalNumOfCopies
+    bookBaseSchema.shape.totalCopies,
+    existingData?.totalCopies
   );
 
   return {
@@ -126,8 +124,8 @@ async function getBookInput(existingData?: IBookBase): Promise<IBookBase> {
     publisher: publisher || '',
     genre: genre || '',
     isbnNo: isbnNo || '',
-    numOfPages: numOfPages || 0,
-    totalNumOfCopies: totalNumOfCopies || 0,
+    pages: pages || 0,
+    totalCopies: totalCopies || 0,
   };
 }
 

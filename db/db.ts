@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export type ColumnData = string | number | boolean | null;
-export type Row = Record<string, ColumnData>;
+export type Row = Record<string, ColumnData | ColumnData[]>;
 
 export interface DatabaseStorageAdapter<DS> {
   parse: (content: string) => DS;

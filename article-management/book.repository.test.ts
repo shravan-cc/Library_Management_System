@@ -21,8 +21,8 @@ describe('BookRepository Tests', () => {
         publisher: 'Penguin Classics',
         genre: 'Adventure',
         isbnNo: '9780140446029',
-        numOfPages: 320,
-        totalNumOfCopies: 15,
+        pages: 320,
+        totalCopies: 15,
       },
       {
         title: '1984',
@@ -30,8 +30,8 @@ describe('BookRepository Tests', () => {
         publisher: 'Houghton Mifflin Harcourt',
         genre: 'Dystopian',
         isbnNo: '9780451524935',
-        numOfPages: 328,
-        totalNumOfCopies: 30,
+        pages: 328,
+        totalCopies: 30,
       },
       {
         title: 'To Kill a Mockingbird',
@@ -39,8 +39,8 @@ describe('BookRepository Tests', () => {
         publisher: 'J.B. Lippincott & Co.',
         genre: 'Southern Gothic',
         isbnNo: '9780061120084',
-        numOfPages: 281,
-        totalNumOfCopies: 25,
+        pages: 281,
+        totalCopies: 25,
       },
       {
         title: 'Pride and Prejudice',
@@ -48,8 +48,8 @@ describe('BookRepository Tests', () => {
         publisher: 'Modern Library',
         genre: 'Romance',
         isbnNo: '9780679783268',
-        numOfPages: 279,
-        totalNumOfCopies: 40,
+        pages: 279,
+        totalCopies: 40,
       },
       {
         title: 'The Great Gatsby',
@@ -57,8 +57,8 @@ describe('BookRepository Tests', () => {
         publisher: 'Scribner',
         genre: 'Tragedy',
         isbnNo: '9780743273565',
-        numOfPages: 180,
-        totalNumOfCopies: 50,
+        pages: 180,
+        totalCopies: 50,
       },
     ];
     bookRepository = new BookRepository(db);
@@ -71,7 +71,7 @@ describe('BookRepository Tests', () => {
     expect(createdBook).toEqual({
       ...data,
       id: 1,
-      availableNumOfCopies: data.totalNumOfCopies,
+      availableCopies: data.totalCopies,
     });
   });
 
@@ -81,7 +81,7 @@ describe('BookRepository Tests', () => {
     const updatedData: IBookBase = {
       ...data,
       title: 'The Mysterious Island - Updated',
-      numOfPages: 350,
+      pages: 350,
     };
 
     const updatedBook = await bookRepository.update(
@@ -93,7 +93,7 @@ describe('BookRepository Tests', () => {
     expect(updatedBook).toEqual({
       ...updatedData,
       id: createdBook.id,
-      availableNumOfCopies: updatedData.totalNumOfCopies,
+      availableCopies: updatedData.totalCopies,
     });
   });
 

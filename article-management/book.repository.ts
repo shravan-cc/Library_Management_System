@@ -25,7 +25,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     const book: IBook = {
       ...data,
       id: bookId,
-      availableNumOfCopies: data.totalNumOfCopies,
+      availableCopies: data.totalCopies,
     };
     this.books.push(book);
     await this.db.save();
@@ -40,7 +40,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
     const updatedBook: IBook = {
       id: this.books[index].id,
       ...data,
-      availableNumOfCopies: data.totalNumOfCopies,
+      availableCopies: data.totalCopies,
     };
     this.books[index] = updatedBook;
     await this.db.save();
@@ -63,9 +63,9 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
   async handleBook(id: number): Promise<boolean> {
     const index = this.books.findIndex((book) => book.id === id);
 
-    if (this.books[index].availableNumOfCopies > 0) {
+    if (this.books[index].availableCopies > 0) {
       console.log(chalk.greenBright('Book issued successfully.'));
-      this.books[index].availableNumOfCopies -= 1;
+      this.books[index].availableCopies -= 1;
       this.db.save();
       return true;
     }
@@ -74,7 +74,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
 
   async returnBook(id: number): Promise<void> {
     const index = this.books.findIndex((book) => book.id === id);
-    this.books[index].availableNumOfCopies += 1;
+    this.books[index].availableCopies += 1;
     this.db.save();
   }
 
