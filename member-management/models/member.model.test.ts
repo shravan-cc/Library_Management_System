@@ -17,12 +17,12 @@ const invalidMemberBaseData = {
 
 const validMemberData = {
   ...validMemberBaseData,
-  memberId: 1,
+  id: 1,
 };
 
 const invalidMemberData = {
   ...validMemberBaseData,
-  memberId: 'one', // Invalid memberId type
+  id: 'one', // Invalid memberId type
 };
 
 describe('memberBaseSchema', () => {

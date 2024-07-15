@@ -39,7 +39,7 @@ export const memberBaseSchema = z.object({
 });
 
 export const memberSchema = memberBaseSchema.extend({
-  memberId: z
+  id: z
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),

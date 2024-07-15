@@ -4,11 +4,11 @@ import { readLine } from '../core/input.utils';
 import { Menu } from '../core/menu';
 import { IMemberBase, memberBaseSchema } from './models/member.model';
 import { z } from 'zod';
-import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
 import chalk from 'chalk';
+import { MySQLDatabase } from '../db/library-db';
 
 const searchSchema = z
   .string()
@@ -26,7 +26,7 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  constructor(private readonly db: Database<LibraryDataset>) {}
+  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
   private repo = new MemberRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
