@@ -1,7 +1,6 @@
 import chalk from 'chalk';
 import { IInteractor } from '../core/interactor';
 import { Menu } from '../core/menu';
-import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { TransactionRepository } from './transaction.repository';
 import { z } from 'zod';
@@ -15,6 +14,7 @@ import {
   returnSchema,
 } from './models/transaction.model';
 import { formatDate, loadPage } from '../core/utils';
+import { MySQLDatabase } from '../db/library-db';
 
 const menu = new Menu([
   { key: '1', label: 'Issue A Book' },
@@ -23,7 +23,7 @@ const menu = new Menu([
   { key: '4', label: '<Previous Menu>' },
 ]);
 export class TransactionInteractor implements IInteractor {
-  constructor(private readonly db: Database<LibraryDataset>) {}
+  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
   private repo = new TransactionRepository(this.db);
   private bookRepo = new BookRepository(this.db);
   private memberRepo = new MemberRepository(this.db);
@@ -87,7 +87,7 @@ async function getReturnBookInputs(
   while (true) {
     const transactionId = await promptForValidInput(
       chalk.cyan('Enter your transaction Id: '),
-      returnSchema.shape.transactionId,
+      returnSchema.shape.id,
       0
     );
     const checkForTransaction = await repo.getById(transactionId);
@@ -99,7 +99,7 @@ async function getReturnBookInputs(
     } else {
       const returnDate = new Date();
       return {
-        transactionId: transactionId,
+        id: transactionId,
         returnDate: formatDate(returnDate),
       };
     }
@@ -122,7 +122,7 @@ async function returnBook(
 ) {
   const transaction = await getReturnBookInputs(repo);
   const returnedBookTransaction = await repo.returnBook(
-    transaction.transactionId,
+    transaction.id,
     transaction.returnDate
   );
 

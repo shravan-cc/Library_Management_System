@@ -1,9 +1,8 @@
-import { KeySchema, unknown } from 'zod';
+import { Connection } from 'mysql2/typings/mysql/lib/Connection';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { PageOption, WhereExpression } from '../libs/types';
-import { AppEnvs } from '../read-env';
 import { MySQLAdapter } from './mysqldb';
-import { D } from 'vitest/dist/reporters-yx5ZTtEV';
+import { QueryResult, ResultSetHeader } from 'mysql2/promise';
 const {
   generateCountSql,
   generateInsertSql,
@@ -12,7 +11,7 @@ const {
   generateUpdateSql,
 } = MySqlQueryGenerator;
 
-export class Database<DS> {
+export class MySQLDatabase<DS> {
   constructor(private readonly adapter: MySQLAdapter) {}
 
   async select<T extends keyof DS>(
@@ -20,7 +19,7 @@ export class Database<DS> {
     column: (keyof DS[T])[],
     where: WhereExpression<DS[T]>,
     pageOpts?: PageOption
-  ) {
+  ): Promise<DS[T][]> {
     try {
       const { sql, values } = generateSelectSql<DS[T]>(
         tableName as string,
@@ -28,22 +27,28 @@ export class Database<DS> {
         where,
         pageOpts
       );
-      const result = await this.adapter.runQuery(sql, values);
-      return result;
-    } catch {
+
+      const result = await this.adapter.runQuery<DS[T][]>(sql, values);
+      return result as DS[T][];
+    } catch (error) {
+      console.error('Error in select query:', error); // Debugging line
       throw new Error(`select query failed!!!!`);
     }
   }
 
-  async insert<T extends keyof DS>(tableName: T, row: Omit<DS[T], 'id'>) {
+  async insert<T extends keyof DS>(
+    tableName: T,
+    row: Omit<DS[T], 'id'>
+  ): Promise<ResultSetHeader> {
     try {
       const { sql, values } = generateInsertSql<Omit<DS[T], 'id'>>(
         tableName as string,
         row
       );
       const result = await this.adapter.runQuery(sql, values);
-      return result;
-    } catch {
+      return result as ResultSetHeader;
+    } catch (error) {
+      console.error(error);
       throw new Error(`Insert query failed!!!!`);
     }
   }
@@ -52,7 +57,7 @@ export class Database<DS> {
     tableName: T,
     row: Partial<DS[T]>,
     where: WhereExpression<DS[T]>
-  ) {
+  ): Promise<ResultSetHeader> {
     try {
       const { sql, values } = generateUpdateSql<DS[T]>(
         tableName as string,
@@ -60,8 +65,9 @@ export class Database<DS> {
         where
       );
       const result = await this.adapter.runQuery(sql, values);
-      return result;
-    } catch {
+      return result as ResultSetHeader;
+    } catch (error) {
+      console.error(error);
       throw new Error(`Update query failed!!!!`);
     }
   }
@@ -82,14 +88,20 @@ export class Database<DS> {
     }
   }
 
-  async count<T extends keyof DS>(tableName: T, where: WhereExpression<DS[T]>) {
+  async count<T extends keyof DS>(
+    tableName: T,
+    where: WhereExpression<DS[T]>
+  ): Promise<number> {
     try {
       const { sql, values } = generateCountSql<DS[T]>(
         tableName as string,
         where
       );
       const result = await this.adapter.runQuery(sql, values);
-      return result;
+      if (Array.isArray(result)) {
+        return result[0].COUNT;
+      }
+      return 0;
     } catch {
       throw new Error(`Count query failed!!!!`);
     }

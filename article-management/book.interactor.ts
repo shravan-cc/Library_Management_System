@@ -3,11 +3,11 @@ import { IInteractor } from '../core/interactor';
 import { BookRepository } from './book.repository';
 import { IBookBase, bookBaseSchema } from './models/book.model';
 import { Menu } from '../core/menu';
-import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
 import chalk from 'chalk';
+import { MySQLDatabase } from '../db/library-db';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -19,7 +19,7 @@ const menu = new Menu([
 ]);
 
 export class BookInteractor implements IInteractor {
-  constructor(private readonly db: Database<LibraryDataset>) {}
+  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
   private repo = new BookRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
@@ -192,6 +192,5 @@ async function searchBook(repo: BookRepository) {
   );
   const pageSize = 5;
   let currentPage = 0;
-
   await loadPage(repo, search, pageSize, currentPage);
 }

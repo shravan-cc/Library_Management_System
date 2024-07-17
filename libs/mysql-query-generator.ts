@@ -8,6 +8,7 @@ import {
   PageOption,
   StringOperator,
 } from './types';
+import { array } from 'zod';
 
 export interface QueryResult {
   sql: string;
@@ -22,7 +23,8 @@ const generateWhereClauseSql = <T>(
       .map(([key, opts]) => {
         const columnName = `\`${key}\``;
         const paramValue: WhereParamValue = opts as WhereParamValue;
-        let value = `${paramValue.value}`;
+        let value = paramValue.value;
+        let data;
         let operator = '';
 
         if (paramValue.value === null) {
@@ -86,15 +88,39 @@ const generateWhereClauseSql = <T>(
             case 'LESSER_THAN_EQUALS':
               operator = ' <= ';
               break;
+
+            case 'IN':
+              operator = ' IN ';
+              if (Array.isArray(value)) {
+                data = value
+                  .map((val) => {
+                    values.push(val);
+                    return '?';
+                  })
+                  .join(', ');
+                data = `(${data})`;
+              }
+              break;
+
+            case 'NOT IN':
+              operator = ' NOT IN ';
+              if (Array.isArray(value)) {
+                data = value
+                  .map((val) => {
+                    values.push(val);
+                    return '?';
+                  })
+                  .join(', ');
+                data = `(${data})`;
+              }
+              break;
           }
         }
-
-        if (typeof paramValue.value === 'string') {
-          values.push(value);
-        } else {
-          values.push(Number(value));
+        if (operator === ' IN ' || operator === ' NOT IN ') {
+          return `${columnName}${operator}${data}`;
         }
 
+        values.push(value);
         return `${columnName}${operator}?`;
       })
       .join(' AND ');
@@ -216,11 +242,11 @@ const generateSelectSql = <T>(
   const values = [...whereClause.values];
   if (pageOpts?.limit) {
     sql += ` LIMIT ?`;
-    values.push(`${pageOpts.limit}`);
+    values.push(pageOpts.limit);
   }
   if (pageOpts?.offset) {
     sql += ` OFFSET ?`;
-    values.push(`${pageOpts?.offset}`);
+    values.push(pageOpts?.offset);
   }
 
   return { sql, values };

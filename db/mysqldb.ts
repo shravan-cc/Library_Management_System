@@ -9,7 +9,6 @@
 // example, can supply necessary DB configuration that db layer expects
 // and initialize it.
 import mysql from 'mysql2/promise';
-import { Connection } from 'mysql2/typings/mysql/lib/Connection';
 /**
  * This config object must be passed to create the SQLDB Manager
  */

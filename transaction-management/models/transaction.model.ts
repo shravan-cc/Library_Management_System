@@ -14,7 +14,7 @@ export const transactionBaseSchema = z.object({
 });
 
 export const transactionSchema = transactionBaseSchema.extend({
-  transactionId: z
+  id: z
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
@@ -23,7 +23,7 @@ export const transactionSchema = transactionBaseSchema.extend({
 });
 
 export const returnSchema = z.object({
-  transactionId: z
+  id: z
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),

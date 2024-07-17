@@ -2,13 +2,13 @@ import { IBook } from '../article-management/models/book.model';
 import { SimpleWhereExpression, WhereExpression } from '../libs/types';
 import { AppEnvs } from '../read-env';
 import { LibraryDataset } from './library-dataset';
-import { Database } from './library-db';
+import { MySQLDatabase } from './library-db';
 import { MySQLAdapter } from './mysqldb';
 import 'dotenv/config';
 
 describe.skip('Database CRUD operations ', () => {
   const mySQLAdapter = new MySQLAdapter({ DbURL: AppEnvs.DATABASE_URL });
-  const db = new Database<LibraryDataset>(mySQLAdapter);
+  const db = new MySQLDatabase<LibraryDataset>(mySQLAdapter);
 
   test('Select operation', async () => {
     const authorClause: SimpleWhereExpression<IBook> = {

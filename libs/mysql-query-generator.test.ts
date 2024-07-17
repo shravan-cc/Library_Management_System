@@ -49,7 +49,7 @@ describe('MySqlQueryGenerator', () => {
       tableName,
       row
     );
-
+    console.log(actualSql);
     expect(actualSql.sql).toBe(expectedSql);
     expect(actualSql.values).toEqual(expectedValues);
   });
@@ -80,7 +80,7 @@ describe('MySqlQueryGenerator', () => {
       row,
       where
     );
-    console.log(actualSql.sql);
+    console.log(actualSql);
     expect(actualSql.sql).toBe(expectedSql);
     expect(actualSql.values).toEqual(expectedValues);
   });
@@ -96,7 +96,7 @@ describe('MySqlQueryGenerator', () => {
       tableName,
       where
     );
-
+    console.log(actualSql);
     expect(actualSql.sql).toBe(expectedSql);
     expect(actualSql.values).toEqual(expectedValues);
   });
@@ -117,7 +117,7 @@ describe('MySqlQueryGenerator', () => {
       columns,
       where
     );
-
+    console.log(actualSql);
     expect(actualSql.sql).toBe(expectedSql);
     expect(actualSql.values).toEqual(expectedValues);
   });
@@ -132,7 +132,7 @@ describe('MySqlQueryGenerator', () => {
       tableName,
       where
     );
-
+    console.log(actualSql);
     expect(actualSql.sql).toBe(expectedSql);
     expect(actualSql.values).toEqual(expectedValues);
   });
@@ -185,6 +185,7 @@ describe('Test SQL generator with queries on BOOK DB', () => {
       },
     ],
   };
+
   test('where clause generation', () => {
     // (`author` LIKE "%Sudha Murthy%")
     const authorClause = generateWhereClauseSql<IBook>(author);
@@ -202,11 +203,10 @@ describe('Test SQL generator with queries on BOOK DB', () => {
       'Penguin UK',
     ]);
 
+    // ((`author` LIKE "%Sudha Murthy%" AND `publisher` = "Penguin UK") OR (`totalCopies` >= 10))
     const authAndPublisherOrCopiesClause = generateWhereClauseSql<IBook>(
       authAndPublisherOrCopies
     );
-
-    // ((`author` LIKE "%Sudha Murthy%" AND `publisher` = "Penguin UK") OR (`totalCopies` >= 10))
     expect(authAndPublisherOrCopiesClause.sql).toEqual(
       '((`author` LIKE ? AND `publisher` = ?) OR (`totalCopies` >= ?))'
     );
@@ -247,5 +247,21 @@ describe('Test SQL generator with queries on BOOK DB', () => {
       'Penguin UK',
       10,
     ]);
+  });
+
+  test('Test SQL generator to check the IN and NOT IN operator', () => {
+    const checkInOrNotIn: WhereExpression<IBook> = {
+      title: {
+        op: 'IN',
+        value: ['happy sunday', 'happy monday'],
+      },
+      id: {
+        op: 'EQUALS',
+        value: 196,
+      },
+    };
+    const actualQuery = generateWhereClauseSql<IBook>(checkInOrNotIn);
+    expect(actualQuery.sql).toEqual('(`title` IN (?, ?) AND `id` = ?)');
+    expect(actualQuery.values).toEqual(['happy sunday', 'happy monday', 196]);
   });
 });
