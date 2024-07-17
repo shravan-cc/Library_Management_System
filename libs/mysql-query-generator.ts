@@ -7,124 +7,128 @@ import {
   WhereExpression,
   PageOption,
   StringOperator,
+  ColumnData,
+  NestedQuery,
 } from './types';
 import { array } from 'zod';
 
 export interface QueryResult {
   sql: string;
-  values: any[];
+  values: ColumnData[];
 }
 const generateWhereClauseSql = <T>(
   whereParams: WhereExpression<T>
 ): QueryResult => {
-  const values: any[] = [];
+  const values: ColumnData[] & ColumnData[][] = [];
   const processSimpleExp = (exp: SimpleWhereExpression<T>) => {
-    const whereQuery = Object.entries(exp)
-      .map(([key, opts]) => {
-        const columnName = `\`${key}\``;
-        const paramValue: WhereParamValue = opts as WhereParamValue;
-        let value = paramValue.value;
-        let data;
-        let operator = '';
+    const whereQuery = Object.entries(exp).map(([key, opts]) => {
+      const columnName = `\`${key}\``;
+      const paramValue: WhereParamValue<T> = opts as WhereParamValue<T>;
+      let value: ColumnData | ColumnData[] | NestedQuery<T> = paramValue.value;
+      let placeHolder: string = '';
+      let operator = '';
 
-        if (paramValue.value === null) {
-          if (paramValue.op === 'EQUALS') {
-            operator = ' IS ';
-          } else {
-            operator = ' IS NOT ';
+      switch (paramValue.op) {
+        case 'EQUALS':
+          operator = paramValue.value === null ? ' IS ' : ' = ';
+          break;
+        case 'NOT_EQUALS':
+          operator = paramValue.value === null ? ' IS NOT ' : ' != ';
+          break;
+
+        case 'STARTS_WITH':
+          operator = ' LIKE ';
+          value = `${value}%`;
+          break;
+
+        case 'NOT_STARTS_WITH':
+          operator = ' NOT LIKE ';
+          value = `${value}%`;
+          break;
+
+        case 'ENDS_WITH':
+          operator = ' LIKE ';
+          value = `%${value}`;
+          break;
+
+        case 'NOT_ENDS_WITH':
+          operator = ' NOT LIKE ';
+          value = `%${value}`;
+          break;
+
+        case 'CONTAINS':
+          operator = ' LIKE ';
+          value = `%${value}%`;
+          break;
+
+        case 'NOT_CONTAINS':
+          operator = ' NOT LIKE ';
+          value = `%${value}%`;
+          break;
+
+        case 'GREATER_THAN':
+          operator = ' > ';
+          break;
+
+        case 'GREATER_THAN_EQUALS':
+          operator = ' >= ';
+          break;
+
+        case 'LESSER_THAN':
+          operator = ' < ';
+          break;
+
+        case 'LESSER_THAN_EQUALS':
+          operator = ' <= ';
+          break;
+
+        case 'IN':
+          operator = ' IN ';
+          if (Array.isArray(value)) {
+            placeHolder = `(${value.map((v) => '?').join(', ')})`;
+            values.push(...value);
+            return `${columnName} ${operator} ${placeHolder}`;
+          } else if (typeof value === 'object' && value) {
+            const subQuery = generateSelectSql(
+              value.tableName,
+              value.row,
+              value.where,
+              value.pagination
+            );
+            placeHolder = `(${subQuery.sql})`;
+            values.push(...subQuery.values);
+            return `${columnName} ${operator} ${placeHolder}`;
           }
-        } else {
-          switch (paramValue.op) {
-            case 'EQUALS':
-              operator = ' = ';
-              break;
+          break;
 
-            case 'NOT_EQUALS':
-              operator = ' != ';
-              break;
-
-            case 'STARTS_WITH':
-              operator = ' LIKE ';
-              value = `${value}%`;
-              break;
-
-            case 'NOT_STARTS_WITH':
-              operator = ' NOT LIKE ';
-              value = `${value}%`;
-              break;
-
-            case 'ENDS_WITH':
-              operator = ' LIKE ';
-              value = `%${value}`;
-              break;
-
-            case 'NOT_ENDS_WITH':
-              operator = ' NOT LIKE ';
-              value = `%${value}`;
-              break;
-
-            case 'CONTAINS':
-              operator = ' LIKE ';
-              value = `%${value}%`;
-              break;
-
-            case 'NOT_CONTAINS':
-              operator = ' NOT LIKE ';
-              value = `%${value}%`;
-              break;
-
-            case 'GREATER_THAN':
-              operator = ' > ';
-              break;
-
-            case 'GREATER_THAN_EQUALS':
-              operator = ' >= ';
-              break;
-
-            case 'LESSER_THAN':
-              operator = ' < ';
-              break;
-
-            case 'LESSER_THAN_EQUALS':
-              operator = ' <= ';
-              break;
-
-            case 'IN':
-              operator = ' IN ';
-              if (Array.isArray(value)) {
-                data = value
-                  .map((val) => {
-                    values.push(val);
-                    return '?';
-                  })
-                  .join(', ');
-                data = `(${data})`;
-              }
-              break;
-
-            case 'NOT IN':
-              operator = ' NOT IN ';
-              if (Array.isArray(value)) {
-                data = value
-                  .map((val) => {
-                    values.push(val);
-                    return '?';
-                  })
-                  .join(', ');
-                data = `(${data})`;
-              }
-              break;
+        case 'NOT IN':
+          operator = ' NOT IN ';
+          if (Array.isArray(value)) {
+            placeHolder = `(${value.map((v) => '?').join(', ')})`;
+            values.push(...value);
+            return `${columnName} ${operator} ${placeHolder}`;
+          } else if (typeof value === 'object' && value) {
+            const subQuery = generateSelectSql(
+              value.tableName,
+              value.row,
+              value.where,
+              value.pagination
+            );
+            placeHolder = `(${subQuery.sql})`;
+            values.push(...subQuery.values);
+            return `${columnName} ${operator} ${placeHolder}`;
           }
-        }
-        if (operator === ' IN ' || operator === ' NOT IN ') {
-          return `${columnName}${operator}${data}`;
-        }
+          break;
+      }
 
+      if (!Array.isArray(value) && typeof value !== 'object')
         values.push(value);
-        return `${columnName}${operator}?`;
-      })
-      .join(' AND ');
-    return whereQuery;
+
+      return `${columnName} ${operator} ? `;
+    });
+    const sql = whereQuery.join(' AND ');
+
+    return sql;
   };
   const whKeys = Object.keys(whereParams);
 

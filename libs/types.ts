@@ -24,6 +24,13 @@ export type BooleanOperator = 'EQUALS' | 'NOT_EQUALS';
 
 export type VectorOperator = 'IN' | 'NOT IN';
 
+export interface NestedQuery<T> {
+  tableName: string;
+  row: (keyof T)[];
+  where: WhereExpression<T>;
+  pagination?: PageOption;
+}
+
 export type StringOperatorParam = {
   op: StringOperator;
   value: string | null;
@@ -39,16 +46,16 @@ export type BooleanOperatorParam = {
   value: boolean | null;
 };
 
-export type VectorOperatorParam = {
+export type VectorOperatorParam<T> = {
   op: VectorOperator;
-  value: ColumnData[];
+  value: ColumnData[] | NestedQuery<T>;
 };
 
-export type WhereParamValue =
+export type WhereParamValue<T> =
   | StringOperatorParam
   | NumberOperatorParam
   | BooleanOperatorParam
-  | VectorOperatorParam;
+  | VectorOperatorParam<T>;
 
 // export type WhereClause<CompleteModel> = {
 //     [key in keyof CompleteModel]: CompleteModel[key] extends string
@@ -69,7 +76,7 @@ export type WhereExpression<CompleteModel> =
   | AndWhereExpression<CompleteModel>;
 
 export type SimpleWhereExpression<CompleteModel> = {
-  [key in keyof Partial<CompleteModel>]: WhereParamValue;
+  [key in keyof Partial<CompleteModel>]: WhereParamValue<CompleteModel>;
 };
 
 export type OrWhereExpression<CompleteModel> = {
@@ -78,3 +85,10 @@ export type OrWhereExpression<CompleteModel> = {
 export type AndWhereExpression<CompleteModel> = {
   AND: WhereExpression<CompleteModel>[];
 };
+
+export interface Trainee {
+  name: string;
+  email: string;
+  dob: string;
+  address: string;
+}

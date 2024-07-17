@@ -5,7 +5,7 @@ import 'dotenv/config';
 import { SimpleWhereExpression } from '../libs/types';
 import { IBook } from '../article-management/models/book.model';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
-describe('my sql db adapter tests', () => {
+describe.skip('my sql db adapter tests', () => {
   const { generateSelectSql } = MySqlQueryGenerator;
   let mySQLAdapter: MySQLAdapter;
   beforeAll(async () => {

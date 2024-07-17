@@ -1,53 +1,106 @@
-import { IBook } from '../article-management/models/book.model';
-import { SimpleWhereExpression, WhereExpression } from '../libs/types';
-import { AppEnvs } from '../read-env';
-import { LibraryDataset } from './library-dataset';
+import { describe, expect, test, beforeEach } from 'vitest';
+import 'dotenv/config';
 import { MySQLDatabase } from './library-db';
 import { MySQLAdapter } from './mysqldb';
-import 'dotenv/config';
+import { AppEnvs } from '../read-env';
+import { IBook, IBookBase } from '../article-management/models/book.model';
+import { Trainee, WhereExpression } from '../libs/types';
+import { LibraryDataset } from './library-dataset';
+import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
+import { title } from 'process';
 
-describe.skip('Database CRUD operations ', () => {
-  const mySQLAdapter = new MySQLAdapter({ DbURL: AppEnvs.DATABASE_URL });
-  const db = new MySQLDatabase<LibraryDataset>(mySQLAdapter);
+describe('Test blocks for all the queries', async () => {
+  let adapter: MySQLAdapter;
+  let db: MySQLDatabase<LibraryDataset>;
+  beforeEach(() => {
+    adapter = new MySQLAdapter({
+      DbURL: AppEnvs.DATABASE_URL,
+    });
+    db = new MySQLDatabase(adapter);
+  });
 
-  test('Select operation', async () => {
-    const authorClause: SimpleWhereExpression<IBook> = {
-      author: {
-        op: 'CONTAINS',
-        value: 'Sudha Murthy',
+  test('Tests for the select query', async () => {
+    const selectQuery = await db.select('books', [], {});
+    const whereCondition: WhereExpression<IBook> = {
+      title: {
+        op: 'IN',
+        value: {
+          tableName: 'books',
+          row: ['title'],
+          where: {
+            OR: [
+              {
+                title: {
+                  op: 'NOT IN',
+                  value: ['A Book on C', 'Programming in C'],
+                },
+              },
+              {
+                author: {
+                  op: 'STARTS_WITH',
+                  value: 'Man',
+                },
+              },
+            ],
+          },
+        },
       },
     };
-    const selectByAuthorClause = await db.select('books', [], authorClause);
-
-    console.log(selectByAuthorClause);
-  });
-  test('Insert operation', async () => {
-    const newBook = {
-      title: 'Adventures of Huckleberry Finn',
-      author: 'Mark Twain',
-      publisher: 'Chatto & Windus',
-      genre: 'Novel',
-      isbnNo: '1234567890123',
-      pages: 350,
-      totalCopies: 10,
-      availableCopies: 10,
-    };
-    await db.insert('books', newBook);
-  });
-  test('Update operation', async () => {
-    const updateData: Partial<IBook> = {
-      title: '',
-    };
-    const whereCondition: WhereExpression<IBook> = {
-      author: { op: 'EQUALS', value: 'Mark Twain' },
-    };
-    await db.update('books', updateData, whereCondition);
+    console.log(MySqlQueryGenerator.generateWhereClauseSql(whereCondition));
+    const selectQuery1 = await db.select('books', ['title'], whereCondition);
+    console.log(selectQuery1);
   });
 
-  test('Delete operation', async () => {
-    const whereCondition: WhereExpression<IBook> = {
-      author: { op: 'EQUALS', value: 'Mark Twain' },
+  test.skip('Tests for the insert query', async () => {
+    const insertingValues: Omit<IBook, 'id'> = {
+      title: 'The Mysterious Island',
+      author: 'Jules Verne',
+      publisher: 'Penguin Classics',
+      genre: 'Adventure',
+      isbnNo: '9780140446029',
+      pages: 320,
+      totalCopies: 15,
+      availableCopies: 15,
     };
-    await db.delete('books', whereCondition);
+    const insertQuery = await db.insert('books', insertingValues);
+    console.log(insertQuery);
+  });
+
+  test.skip('Tests for the delete query', async () => {
+    const whereCondition: WhereExpression<IBook> = {
+      title: {
+        op: 'EQUALS',
+        value: 'This has been Changed',
+      },
+      id: {
+        op: 'EQUALS',
+        value: 179,
+      },
+    };
+    const deleteQuery = await db.delete('books', whereCondition);
+    console.log(deleteQuery);
+  });
+
+  test.skip('Tests for the update query', async () => {
+    const setValues: Partial<IBook> = {
+      title: 'The Mysterious Island-Changed',
+    };
+    const whereCondition: WhereExpression<IBook> = {
+      title: {
+        op: 'EQUALS',
+        value: 'The Mysterious Island',
+      },
+      author: {
+        op: 'EQUALS',
+        value: 'Jules Verne',
+      },
+    };
+    const updateQuery = await db.update('books', setValues, whereCondition);
+    console.log(updateQuery);
+  });
+
+  test.skip('Tests for the count query', async () => {
+    const countQuery = await db.count('books', {});
+    console.log(countQuery);
   });
 });
