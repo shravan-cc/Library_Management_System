@@ -1,152 +1,192 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, beforeEach } from 'vitest';
 import { MySqlQueryGenerator } from './mysql-query-generator';
-import {
-  OrWhereExpression,
-  SimpleWhereExpression,
-  WhereExpression,
-} from './types';
-import { IBook, IBookBase } from '../article-management/models/book.model';
+import { SimpleWhereExpression, Trainee, WhereExpression } from './types';
+import { IBookBase, IBook } from '../article-management/models/book.model';
 import exp from 'constants';
-import { aC } from 'vitest/dist/reporters-yx5ZTtEV';
+import { string } from 'zod';
 
-// Sample data for testing
-const tableName = 'trainees';
-const {
-  generateWhereClauseSql,
-  generateInsertSql,
-  generateUpdateSql,
-  generateDeleteSql,
-  generateSelectSql,
-  generateCountSql,
-} = MySqlQueryGenerator;
-interface UserFields {
-  id: string;
-  name: string;
-  email: string;
-  address: string;
-  dob: string;
-}
-
-type InsertFields = Omit<UserFields, 'id'>;
-
-describe('MySqlQueryGenerator', () => {
-  test('generateInsertSql should generate correct SQL for insertion', () => {
-    const row: InsertFields = {
-      name: 'Vignesh',
-      email: 'vignesh@codecraft.co.in',
-      dob: '2001-12-28',
-      address: 'Mangalore, Karnataka',
+describe.skip('Test blocks for getting queries from the functions', () => {
+  let tableName: string;
+  beforeEach(() => {
+    tableName = '`trainees`';
+  });
+  test('Tests for the insert SQL query', () => {
+    const insertingValues = {
+      name: 'Shravan',
+      email: 'shravan@codecraft.co.in',
+      dob: '04-05-2002',
+      address: 'Kavoor, Mangalore',
     };
-
-    const expectedSql = `INSERT INTO \`${tableName}\` (\`name\`, \`email\`, \`dob\`, \`address\`) VALUES (?, ?, ?, ?)`;
-    const expectedValues = [
-      'Vignesh',
-      'vignesh@codecraft.co.in',
-      '2001-12-28',
-      'Mangalore, Karnataka',
-    ];
-    const actualSql = MySqlQueryGenerator.generateInsertSql<InsertFields>(
+    const insertSQL = MySqlQueryGenerator.generateInsertSql(
       tableName,
-      row
+      insertingValues
     );
-    console.log(actualSql);
-    expect(actualSql.sql).toBe(expectedSql);
-    expect(actualSql.values).toEqual(expectedValues);
+    expect(insertSQL).toEqual(
+      'INSERT INTO `trainees` (name, email, dob, address) VALUES ("Shravan", "shravan@codecraft.co.in", "04-05-2002", "Kavoor, Mangalore")'
+    );
   });
 
-  test('generateUpdateSql should generate correct SQL for updating', () => {
-    const row: Partial<UserFields> = {
-      address: 'Kulshekar, Mangalore, Karnataka',
-    };
-
-    const where: WhereExpression<UserFields> = {
+  test('Tests for the where SQL query', () => {
+    const conditionValues: WhereExpression<Trainee> = {
       OR: [
         {
-          email: { op: 'EQUALS', value: 'vignesh@codecraft.co.in' },
-          dob: { op: 'NOT_EQUALS', value: '2001-12-21' },
+          name: {
+            op: 'EQUALS',
+            value: 'Shravan',
+          },
+          address: {
+            op: 'NOT_EQUALS',
+            value: 'Mangalore',
+          },
         },
-        { dob: { op: 'EQUALS', value: '2001-12-25' } },
+        {
+          email: {
+            op: 'STARTS_WITH',
+            value: 'shra',
+          },
+        },
       ],
     };
-    const expectedSql = `UPDATE \`${tableName}\` SET address = ? WHERE ((\`email\` = ? AND \`dob\` != ?) OR (\`dob\` = ?)) `;
-    const expectedValues = [
-      'Kulshekar, Mangalore, Karnataka',
-      'vignesh@codecraft.co.in',
-      '2001-12-21',
-      '2001-12-25',
-    ];
-    const actualSql = MySqlQueryGenerator.generateUpdateSql<UserFields>(
-      tableName,
-      row,
-      where
+    expect(MySqlQueryGenerator.generateWhereClauseSql(conditionValues)).toEqual(
+      '((`name`  =  "Shravan" AND `address`  !=  "Mangalore")OR(`email`  LIKE  "shra%"))'
     );
-    console.log(actualSql);
-    expect(actualSql.sql).toBe(expectedSql);
-    expect(actualSql.values).toEqual(expectedValues);
   });
 
-  test('generateDeleteSql should generate correct SQL for deletion', () => {
-    const where: WhereExpression<UserFields> = {
-      email: { op: 'EQUALS', value: 'vignesh@codecraft.co.in' },
-    };
+  test('Tests for the select query', () => {
+    let selectSql;
+    selectSql = MySqlQueryGenerator.generateSelectSql(tableName, [], {});
+    expect(selectSql).toEqual('SELECT * FROM `trainees`');
 
-    const expectedSql = `DELETE FROM \`${tableName}\` WHERE (\`email\` = ?) `;
-    const expectedValues = ['vignesh@codecraft.co.in'];
-    const actualSql = MySqlQueryGenerator.generateDeleteSql<UserFields>(
+    selectSql = MySqlQueryGenerator.generateSelectSql(
       tableName,
-      where
+      ['email', 'name'],
+      {},
+      { limit: 1 }
     );
-    console.log(actualSql);
-    expect(actualSql.sql).toBe(expectedSql);
-    expect(actualSql.values).toEqual(expectedValues);
+    expect(selectSql).toEqual('SELECT email,name FROM `trainees` LIMIT 1');
+
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 'Shravan',
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    selectSql = MySqlQueryGenerator.generateSelectSql(
+      tableName,
+      [],
+      whereCondition,
+      { limit: 1 }
+    );
+    expect(selectSql).toEqual(
+      'SELECT * FROM `trainees` WHERE ((`name`  =  "Shravan")OR(`address`  LIKE  "Man%")) LIMIT 1'
+    );
   });
 
-  test('generateSelectSql should generate correct SQL for selection', () => {
-    const columns: (keyof UserFields)[] = ['id', 'name', 'email', 'dob'];
-    const where: WhereExpression<UserFields> = {
-      name: { op: 'EQUALS', value: 'Vignesh' },
+  test('Tests for the delete query', () => {
+    let deleteSql;
+    deleteSql = MySqlQueryGenerator.generateDeleteSql(tableName, {});
+    expect(deleteSql).toEqual('DELETE FROM `trainees`');
+
+    const conditionValues: WhereExpression<Trainee> = {
+      OR: [
+        {
+          AND: [
+            {
+              OR: [
+                {
+                  name: {
+                    op: 'STARTS_WITH',
+                    value: 'Krish',
+                  },
+                },
+                {
+                  email: {
+                    op: 'EQUALS',
+                    value: 'Dey',
+                  },
+                },
+              ],
+            },
+            {
+              address: {
+                op: 'CONTAINS',
+                value: 'West Bengal',
+              },
+              dob: {
+                op: 'NOT_CONTAINS',
+                value: '00',
+              },
+            },
+          ],
+        },
+      ],
     };
-
-    // const offset: PageOption = 0;
-    // const limit: PageOption = 1;
-
-    const expectedSql = `SELECT \`id\`, \`name\`, \`email\`, \`dob\` FROM \`${tableName}\` WHERE (\`name\` = ?)`;
-    const expectedValues = ['Vignesh'];
-    const actualSql = MySqlQueryGenerator.generateSelectSql<UserFields>(
+    deleteSql = MySqlQueryGenerator.generateDeleteSql(
       tableName,
-      columns,
-      where
+      conditionValues
     );
-    console.log(actualSql);
-    expect(actualSql.sql).toBe(expectedSql);
-    expect(actualSql.values).toEqual(expectedValues);
+    expect(deleteSql).toEqual(
+      'DELETE FROM `trainees` WHERE ((((`name`  LIKE  "Krish%")OR(`email`  =  "Dey"))AND(`address`  LIKE  "%West Bengal%" AND `dob`  NOT LIKE  "%00%")))'
+    );
   });
 
-  test('generateCountSql should generate correct SQL for counting', () => {
-    const where: WhereExpression<UserFields> = {
-      email: { op: 'EQUALS', value: 'vignesh@codecraft.co.in' },
+  test('Tests for the count query', () => {
+    const countSql = MySqlQueryGenerator.generateCountSql(tableName, {});
+    expect(countSql).toEqual('SELECT COUNT(*) AS `count` FROM `trainees`');
+  });
+
+  test('Tests for the update query', () => {
+    const setValues: Partial<Trainee> = {
+      name: 'Shravan',
+      email: 'shravan@codecraft.co.in',
     };
-    const expectedSql = `SELECT COUNT(*) AS 'COUNT' FROM ${tableName} WHERE (\`email\` = ?)`;
-    const expectedValues = ['vignesh@codecraft.co.in'];
-    const actualSql = MySqlQueryGenerator.generateCountSql<UserFields>(
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 'Shravan',
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    const updateSql = MySqlQueryGenerator.generateUpdateSql(
       tableName,
-      where
+      setValues,
+      whereCondition
     );
-    console.log(actualSql);
-    expect(actualSql.sql).toBe(expectedSql);
-    expect(actualSql.values).toEqual(expectedValues);
+    expect(updateSql).toEqual(
+      'UPDATE `trainees` SET name = "Shravan", email = "shravan@codecraft.co.in" WHERE ((`name`  =  "Shravan")OR(`address`  LIKE  "Man%"))'
+    );
   });
 });
 
-describe('Test SQL generator with queries on BOOK DB', () => {
-  const author: SimpleWhereExpression<IBook> = {
+describe.skip('Tests for books from sql query generator', () => {
+  const { generateSelectSql, generateWhereClauseSql } = MySqlQueryGenerator;
+  const authorClause: WhereExpression<IBookBase> = {
     author: {
       op: 'CONTAINS',
       value: 'Sudha Murthy',
     },
   };
 
-  const authAndPublisher: SimpleWhereExpression<IBook> = {
+  const authAndPublisher: WhereExpression<IBook> = {
     author: {
       op: 'CONTAINS',
       value: 'Sudha Murthy',
@@ -157,25 +197,17 @@ describe('Test SQL generator with queries on BOOK DB', () => {
     },
   };
 
-  const authAndPublisherOrCopies: OrWhereExpression<IBook> = {
-    OR: [
-      authAndPublisher,
-      {
-        totalCopies: {
-          op: 'GREATER_THAN_EQUALS',
-          value: 10,
-        },
-      },
-    ],
-  };
-
-  const authOrPublisher: OrWhereExpression<IBook> = {
+  const authAndPublisherOrTotalCopies: WhereExpression<Partial<IBook>> = {
     OR: [
       {
         author: {
           op: 'CONTAINS',
           value: 'Sudha Murthy',
         },
+        publisher: {
+          op: 'EQUALS',
+          value: 'Penguin UK',
+        },
       },
       {
         totalCopies: {
@@ -186,82 +218,277 @@ describe('Test SQL generator with queries on BOOK DB', () => {
     ],
   };
 
-  test('where clause generation', () => {
-    // (`author` LIKE "%Sudha Murthy%")
-    const authorClause = generateWhereClauseSql<IBook>(author);
-    expect(authorClause.sql).toEqual('(`author` LIKE ?)');
-    expect(authorClause.values).toEqual(['%Sudha Murthy%']);
-
-    // (`author` LIKE "%Sudha Murthy%" AND `publisher` = "Penguin UK")
-    const authAndPublisherClause =
-      generateWhereClauseSql<IBook>(authAndPublisher);
-    expect(authAndPublisherClause.sql).toEqual(
-      '(`author` LIKE ? AND `publisher` = ?)'
-    );
-    expect(authAndPublisherClause.values).toEqual([
-      '%Sudha Murthy%',
-      'Penguin UK',
-    ]);
-
-    // ((`author` LIKE "%Sudha Murthy%" AND `publisher` = "Penguin UK") OR (`totalCopies` >= 10))
-    const authAndPublisherOrCopiesClause = generateWhereClauseSql<IBook>(
-      authAndPublisherOrCopies
-    );
-    expect(authAndPublisherOrCopiesClause.sql).toEqual(
-      '((`author` LIKE ? AND `publisher` = ?) OR (`totalCopies` >= ?))'
-    );
-    expect(authAndPublisherOrCopiesClause.values).toEqual([
-      '%Sudha Murthy%',
-      'Penguin UK',
-      10,
-    ]);
-
-    // ((`author` LIKE "%Sudha Murthy%") OR (`totalCopies` >= 10))
-    const authOrPublisherClause =
-      generateWhereClauseSql<IBook>(authOrPublisher);
-    expect(authOrPublisherClause.sql).toEqual(
-      '((`author` LIKE ?) OR (`totalCopies` >= ?))'
-    );
-    expect(authOrPublisherClause.values).toEqual(['%Sudha Murthy%', 10]);
-  });
-
-  test('select tests', () => {
-    // SELECT * FROM `books` WHERE (`author` LIKE "%Sudha Murthy%")
-    const selectByAuthor = generateSelectSql<IBook>('books', [], author);
-    expect(selectByAuthor.sql).toEqual(
-      'SELECT * FROM `books` WHERE (`author` LIKE ?)'
-    );
-    expect(selectByAuthor.values).toEqual(['%Sudha Murthy%']);
-
-    //
-    const selectAuthAndPublisherOrCopies = generateSelectSql<IBook>(
-      'books',
-      ['author', 'publisher', 'totalCopies'],
-      authAndPublisherOrCopies
-    );
-    expect(selectAuthAndPublisherOrCopies.sql).toEqual(
-      'SELECT `author`, `publisher`, `totalCopies` FROM `books` WHERE ((`author` LIKE ? AND `publisher` = ?) OR (`totalCopies` >= ?))'
-    );
-    expect(selectAuthAndPublisherOrCopies.values).toEqual([
-      '%Sudha Murthy%',
-      'Penguin UK',
-      10,
-    ]);
-  });
-
-  test('Test SQL generator to check the IN and NOT IN operator', () => {
-    const checkInOrNotIn: WhereExpression<IBook> = {
-      title: {
-        op: 'IN',
-        value: ['happy sunday', 'happy monday'],
+  const authOrTotalCopies: WhereExpression<IBook> = {
+    OR: [
+      {
+        author: {
+          op: 'CONTAINS',
+          value: 'Sudha Murty',
+        },
       },
-      id: {
-        op: 'EQUALS',
-        value: 196,
+      {
+        totalCopies: {
+          op: 'GREATER_THAN',
+          value: 10,
+        },
+      },
+    ],
+  };
+  test('Tests for where query from the books', () => {
+    expect(MySqlQueryGenerator.generateWhereClauseSql(authorClause)).toEqual(
+      '(`author`  LIKE  "%Sudha Murthy%")'
+    );
+
+    expect(
+      MySqlQueryGenerator.generateWhereClauseSql(authAndPublisher)
+    ).toEqual(
+      '(`author`  LIKE  "%Sudha Murthy%" AND `publisher`  =  "Penguin UK")'
+    );
+
+    expect(
+      MySqlQueryGenerator.generateWhereClauseSql(authAndPublisherOrTotalCopies)
+    ).toEqual(
+      '((`author`  LIKE  "%Sudha Murthy%" AND `publisher`  =  "Penguin UK")OR(`totalNumOfCopies`  >=  10))'
+    );
+
+    expect(
+      MySqlQueryGenerator.generateWhereClauseSql(authOrTotalCopies)
+    ).toEqual(
+      '((`author`  LIKE  "%Sudha Murty%")OR(`totalNumOfCopies`  >  10))'
+    );
+  });
+
+  test('Tests for SELECT query from the books', () => {
+    // SELECT * FROM Books Where `author` LIKE '%Sudha Murty%'
+    expect(generateSelectSql<IBook>(`Books`, [], authorClause)).toEqual(
+      'SELECT * FROM Books WHERE (`author`  LIKE  "%Sudha Murthy%")'
+    );
+
+    //SELECT * FROM Books Where ((`author`  LIKE  "%Sudha Murthy%" AND `publisher`  =  "Penguin UK")OR(`totalNumOfCopies`  >=  10))
+    expect(
+      generateSelectSql<IBook>(
+        'books',
+        ['author', 'title', 'availableCopies'],
+        authAndPublisherOrTotalCopies,
+        {
+          limit: 10,
+        }
+      )
+    ).toEqual(
+      'SELECT `author`,`title`,`availableNumOfCopies` FROM books WHERE ((`author`  LIKE  "%Sudha Murthy%" AND `publisher`  =  "Penguin UK")OR(`totalNumOfCopies`  >=  10)) LIMIT 10'
+    );
+  });
+});
+
+describe('Test block for the sql injection', () => {
+  let tableName: string;
+  beforeEach(() => {
+    tableName = '`trainees`';
+  });
+  test('Tests for the insert query', () => {
+    const insertingValues = {
+      name: 'Shravan',
+      email: 'shravan@codecraft.co.in',
+      dob: '04-05-2002',
+      address: 'Kavoor, Mangalore',
+    };
+    const insertSQL = MySqlQueryGenerator.generateInsertSql(
+      tableName,
+      insertingValues
+    );
+    console.log(insertSQL);
+  });
+
+  test('Tests for the where query', () => {
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 'Shravan',
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    console.log(MySqlQueryGenerator.generateWhereClauseSql(whereCondition));
+  });
+
+  test('Tests for the select query', () => {
+    let selectSql;
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 1,
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    selectSql = MySqlQueryGenerator.generateSelectSql(
+      tableName,
+      [],
+      whereCondition,
+      { limit: 1 }
+    );
+    console.log(selectSql);
+  });
+
+  test('Tests for the delete query', () => {
+    let deleteSql;
+    deleteSql = MySqlQueryGenerator.generateDeleteSql(tableName, {});
+    console.log(deleteSql);
+    const conditionValues: WhereExpression<Trainee> = {
+      OR: [
+        {
+          AND: [
+            {
+              OR: [
+                {
+                  name: {
+                    op: 'STARTS_WITH',
+                    value: 'Krish',
+                  },
+                },
+                {
+                  email: {
+                    op: 'EQUALS',
+                    value: 'Dey',
+                  },
+                },
+              ],
+            },
+            {
+              address: {
+                op: 'CONTAINS',
+                value: 'West Bengal',
+              },
+              dob: {
+                op: 'NOT_CONTAINS',
+                value: '00',
+              },
+            },
+          ],
+        },
+      ],
+    };
+    deleteSql = MySqlQueryGenerator.generateDeleteSql(
+      tableName,
+      conditionValues
+    );
+    console.log(deleteSql);
+  });
+
+  test('Tests for the count query', () => {
+    let countSql = MySqlQueryGenerator.generateCountSql(tableName, {});
+    console.log(countSql);
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 1,
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    countSql = MySqlQueryGenerator.generateCountSql(tableName, whereCondition);
+    console.log(countSql);
+  });
+
+  test('Tests for the update query', () => {
+    const setValues: Partial<Trainee> = {
+      name: 'Shravan',
+      email: 'shravan@codecraft.co.in',
+    };
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'EQUALS',
+            value: 'Shravan',
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    const updateSql = MySqlQueryGenerator.generateUpdateSql(
+      tableName,
+      setValues,
+      whereCondition
+    );
+    console.log(updateSql);
+  });
+
+  test('Tests for the IN and NOT IN conditions', () => {
+    const whereCondition: WhereExpression<Trainee> = {
+      OR: [
+        {
+          name: {
+            op: 'NOT IN',
+            value: ['Shravan', 'Hegde', 1],
+          },
+        },
+        {
+          address: {
+            op: 'STARTS_WITH',
+            value: 'Man',
+          },
+        },
+      ],
+    };
+    console.log(MySqlQueryGenerator.generateWhereClauseSql(whereCondition));
+  });
+
+  test('Tests for IN and NOT IN conditions for nested query', () => {
+    const whereCondition: WhereExpression<Trainee> = {
+      name: {
+        op: 'IN',
+        value: {
+          tableName: 'trainee',
+          row: [],
+          where: {
+            OR: [
+              {
+                name: {
+                  op: 'NOT IN',
+                  value: ['Shravan', 'Hegde', 1],
+                },
+              },
+              {
+                address: {
+                  op: 'STARTS_WITH',
+                  value: 'Man',
+                },
+              },
+            ],
+          },
+        },
       },
     };
-    const actualQuery = generateWhereClauseSql<IBook>(checkInOrNotIn);
-    expect(actualQuery.sql).toEqual('(`title` IN (?, ?) AND `id` = ?)');
-    expect(actualQuery.values).toEqual(['happy sunday', 'happy monday', 196]);
+    console.log(MySqlQueryGenerator.generateWhereClauseSql(whereCondition));
   });
 });

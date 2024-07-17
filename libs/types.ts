@@ -85,3 +85,10 @@ export type OrWhereExpression<CompleteModel> = {
 export type AndWhereExpression<CompleteModel> = {
   AND: WhereExpression<CompleteModel>[];
 };
+
+export interface Trainee {
+  name: string;
+  email: string;
+  dob: string;
+  address: string;
+}
