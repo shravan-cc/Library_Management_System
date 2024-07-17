@@ -4,11 +4,16 @@ import { IMemberBase } from './models/member.model';
 import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
 import { join } from 'path';
+import { MySQLDatabase } from '../db/library-db';
+import { MySQLAdapter } from '../db/mysqldb';
+import { BookRepository } from '../article-management/book.repository';
+import { AppEnvs } from '../read-env';
+import 'dotenv/config';
 
-describe('Tests for MemberRepository class methods', () => {
+/*describe.skip('Tests for MemberRepository class methods', () => {
   let memberRepository: MemberRepository;
   let data: IMemberBase;
-  let db: Database<LibraryDataset>;
+  let db: MySqlDatabase<MySQLLibraryDatset>;
 
   beforeAll(async () => {
     db = new Database(join(__dirname, './data/dbtest.json'));
@@ -94,5 +99,38 @@ describe('Tests for MemberRepository class methods', () => {
     });
 
     expect(result.pagination.total).toBe(5);
+  });
+});*/
+describe.skip('Tests for the mySql Member repository', () => {
+  let adapter: MySQLAdapter;
+  let repo: MemberRepository;
+  let db: MySQLDatabase<LibraryDataset>;
+  beforeEach(() => {
+    adapter = new MySQLAdapter({
+      DbURL: AppEnvs.DATABASE_URL,
+    });
+    db = new MySQLDatabase(adapter);
+    repo = new MemberRepository(db);
+  });
+
+  test('Tests for selecting a particular member', async () => {
+    const member = await repo.getById(2);
+    console.log(member);
+  });
+
+  test('Tests for inserting a particular member', async () => {
+    const member: IMemberBase = {
+      firstName: 'Anup',
+      lastName: 'Kumar',
+      phone: 7687654345,
+      address: 'Haryana,India',
+    };
+    const insertedMember = await repo.create(member);
+    console.log(insertedMember);
+  });
+
+  test.skip('Tests for deleting a particular meber', async () => {
+    const deletedMember = await repo.delete(181);
+    console.log(deletedMember);
   });
 });

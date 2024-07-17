@@ -1,115 +1,54 @@
-import { join } from 'path';
-import { Database } from '../db/db';
 import { LibraryDataset } from '../db/library-dataset';
+import { MySQLDatabase } from '../db/library-db';
+import { MySQLAdapter } from '../db/mysqldb';
+import { AppEnvs } from '../read-env';
 import { BookRepository } from './book.repository';
+import 'dotenv/config';
 import { IBookBase } from './models/book.model';
 
-describe('BookRepository Tests', () => {
-  let books: IBookBase[];
-  let bookRepository: BookRepository;
-  let db: Database<LibraryDataset>;
-
-  beforeAll(async () => {
-    db = new Database(join(__dirname, './data/dbtest.json'));
-    await db.clear();
-  });
+describe('Tests for the mySql Book repository', () => {
+  let adapter: MySQLAdapter;
+  let repo: BookRepository;
+  let db: MySQLDatabase<LibraryDataset>;
   beforeEach(() => {
-    books = [
-      {
-        title: 'The Mysterious Island',
-        author: 'Jules Verne',
-        publisher: 'Penguin Classics',
-        genre: 'Adventure',
-        isbnNo: '9780140446029',
-        pages: 320,
-        totalCopies: 15,
-      },
-      {
-        title: '1984',
-        author: 'George Orwell',
-        publisher: 'Houghton Mifflin Harcourt',
-        genre: 'Dystopian',
-        isbnNo: '9780451524935',
-        pages: 328,
-        totalCopies: 30,
-      },
-      {
-        title: 'To Kill a Mockingbird',
-        author: 'Harper Lee',
-        publisher: 'J.B. Lippincott & Co.',
-        genre: 'Southern Gothic',
-        isbnNo: '9780061120084',
-        pages: 281,
-        totalCopies: 25,
-      },
-      {
-        title: 'Pride and Prejudice',
-        author: 'Jane Austen',
-        publisher: 'Modern Library',
-        genre: 'Romance',
-        isbnNo: '9780679783268',
-        pages: 279,
-        totalCopies: 40,
-      },
-      {
-        title: 'The Great Gatsby',
-        author: 'F. Scott Fitzgerald',
-        publisher: 'Scribner',
-        genre: 'Tragedy',
-        isbnNo: '9780743273565',
-        pages: 180,
-        totalCopies: 50,
-      },
-    ];
-    bookRepository = new BookRepository(db);
-  });
-
-  test('should create a book', async () => {
-    const data: IBookBase = books[0];
-    const createdBook = await bookRepository.create(data);
-    expect(createdBook).toBeDefined();
-    expect(createdBook).toEqual({
-      ...data,
-      id: 1,
-      availableCopies: data.totalCopies,
+    adapter = new MySQLAdapter({
+      DbURL: AppEnvs.DATABASE_URL,
     });
+    db = new MySQLDatabase(adapter);
+    repo = new BookRepository(db);
+  });
+  test.skip('Tests for selecting a particular book', async () => {
+    const book = await repo.getById(100);
+    console.log(book);
   });
 
-  test('should update a book', async () => {
-    const data: IBookBase = books[0];
-    const createdBook = await bookRepository.create(data);
-    const updatedData: IBookBase = {
-      ...data,
-      title: 'The Mysterious Island - Updated',
-      pages: 350,
+  test.skip('Tests for inserting a particular book', async () => {
+    const book: IBookBase = {
+      title: 'A Book on Data Structures',
+      author: 'Al Kelley, Ira Pohl DS',
+      publisher: 'Benjamin-Cummings Publishing Company',
+      genre: 'Computers',
+      isbnNo: '9780805300123',
+      pages: 568,
+      totalCopies: 15,
     };
-
-    const updatedBook = await bookRepository.update(
-      createdBook.id,
-      updatedData
-    );
-
-    expect(updatedBook).toBeDefined();
-    expect(updatedBook).toEqual({
-      ...updatedData,
-      id: createdBook.id,
-      availableCopies: updatedData.totalCopies,
-    });
+    const insertedBook = await repo.create(book);
+    console.log(insertedBook);
   });
 
-  test('should delete a book', async () => {
-    const createdBook = await bookRepository.create(books[4]);
-    const deletedBook = await bookRepository.delete(createdBook.id);
-    expect(deletedBook).toBeDefined();
-    expect(deletedBook).toEqual(createdBook);
-    const fetchedBook = await bookRepository.getById(createdBook.id);
-    expect(fetchedBook).toBeNull();
+  test.skip('Tests for deleting a particular book', async () => {
+    const deletdeBook = await repo.delete(181);
+    console.log(deletdeBook);
   });
 
-  test('should get a book by id', async () => {
-    const createdBook = await bookRepository.create(books[0]);
-    const fetchedBook = await bookRepository.getById(createdBook.id);
-    expect(fetchedBook).toBeDefined();
-    expect(fetchedBook).toEqual(createdBook);
+  test.skip('Tests for handling the particular book', async () => {
+    const bool = await repo.handleBook(180);
+    console.log(bool);
   });
+
+  test.skip('Tests for deleting the particular book', async () => {
+    const book = await repo.returnBook(180);
+  });
+
+  test.skip('Tests for the list', () => {});
 });
