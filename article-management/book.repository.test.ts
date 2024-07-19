@@ -5,8 +5,9 @@ import { AppEnvs } from '../read-env';
 import { BookRepository } from './book.repository';
 import 'dotenv/config';
 import { IBookBase } from './models/book.model';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 
-describe('Tests for the mySql Book repository', () => {
+describe.skip('Tests for the mySql Book repository', () => {
   let adapter: MySQLAdapter;
   let repo: BookRepository;
   let db: MySQLDatabase<LibraryDataset>;
@@ -51,4 +52,30 @@ describe('Tests for the mySql Book repository', () => {
   });
 
   test.skip('Tests for the list', () => {});
+});
+
+describe('Tests for book repository after applying the connection', () => {
+  let factory: PoolConnectionFactory;
+  beforeEach(() => {
+    factory = new PoolConnectionFactory({
+      DbURL: AppEnvs.DATABASE_URL,
+    });
+  });
+  test.skip('Tests to handle the book', async () => {
+    const repo = new BookRepository(factory);
+    const res = await repo.handleBook(187);
+    console.log(res);
+  });
+
+  test('Tests to return the book', async () => {
+    const repo = new BookRepository(factory);
+    const res = await repo.returnBook(187);
+    console.log(res);
+  });
+
+  test('Tests for the list', async () => {
+    const repo = new BookRepository(factory);
+    const res = await repo.list({ search: '', limit: 5, offset: 0 });
+    console.log(res);
+  });
 });

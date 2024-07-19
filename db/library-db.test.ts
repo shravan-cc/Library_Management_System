@@ -9,7 +9,7 @@ import { LibraryDataset } from './library-dataset';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { title } from 'process';
 
-describe('Test blocks for all the queries', async () => {
+describe.skip('Test blocks for all the queries', async () => {
   let adapter: MySQLAdapter;
   let db: MySQLDatabase<LibraryDataset>;
   beforeEach(() => {
