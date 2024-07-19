@@ -126,9 +126,9 @@ export class TransactionDatabase<DS> {
       );
 
       //const result = await this.adapter.runQuery<DS[T][]>(sql, values);
-      const result = (await this.factory.acquireTransactionConnection()).query<
-        ResultSetHeader[]
-      >(sql, values);
+      const result = (
+        await this.factory.acquireTransactionPoolConnection()
+      ).query<ResultSetHeader[]>(sql, values);
       return result as Promise<DS[T][]>;
     } catch (error) {
       console.error('Error in select query:', error); // Debugging line

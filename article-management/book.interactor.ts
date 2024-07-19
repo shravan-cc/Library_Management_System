@@ -8,6 +8,7 @@ import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
 import chalk from 'chalk';
 import { MySQLDatabase } from '../db/library-db';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -19,8 +20,8 @@ const menu = new Menu([
 ]);
 
 export class BookInteractor implements IInteractor {
-  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
-  private repo = new BookRepository(this.db);
+  constructor(private readonly factory: PoolConnectionFactory) {}
+  private repo = new BookRepository(this.factory);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {

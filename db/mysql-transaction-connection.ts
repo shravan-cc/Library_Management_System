@@ -7,8 +7,10 @@ export interface IConnection<QR> {
 }
 
 export interface IConnectionFactory<QR> {
-  acquireConnection(): Promise<PoolConnection<QR>>;
-  acquireTransactionConnection(): Promise<TransactionPoolConnection<QR>>;
+  acquirePoolConnection(): Promise<PoolConnection<QR>>;
+  acquireTransactionPoolConnection(): Promise<TransactionPoolConnection<QR>>;
+  acquireStandaloneConnection(): Promise<StandaloneConnection<QR>>;
+  acquireTransactionConnection(): Promise<TransactionConnection<QR>>;
 }
 
 export abstract class StandaloneConnection<QR> implements IConnection<QR> {
@@ -182,12 +184,26 @@ export class PoolConnectionFactory implements IConnectionFactory<QueryResult> {
   constructor(private readonly config: DBConfig) {
     this.pool = mysql.createPool(this.config.DbURL);
   }
-  async acquireConnection(): Promise<PoolConnection<QueryResult>> {
-    let connection = new MySQLPoolConnection(this.pool);
+  async acquireStandaloneConnection(): Promise<
+    StandaloneConnection<mysql.QueryResult>
+  > {
+    const connection = new MySqlStandaloneConnection(this.config.DbURL);
     await connection.initialize();
     return connection;
   }
   async acquireTransactionConnection(): Promise<
+    TransactionConnection<mysql.QueryResult>
+  > {
+    const connection = new MySQLTransactionConnection(this.config.DbURL);
+    await connection.initialize();
+    return connection;
+  }
+  async acquirePoolConnection(): Promise<PoolConnection<QueryResult>> {
+    const connection = new MySQLPoolConnection(this.pool);
+    await connection.initialize();
+    return connection;
+  }
+  async acquireTransactionPoolConnection(): Promise<
     TransactionPoolConnection<QueryResult>
   > {
     const connection = new MySQLTransactionPoolConnection(this.pool);
