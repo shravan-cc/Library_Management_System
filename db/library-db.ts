@@ -3,6 +3,7 @@ import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { PageOption, WhereExpression } from '../libs/types';
 import { MySQLAdapter } from './mysqldb';
 import { QueryResult, ResultSetHeader } from 'mysql2/promise';
+import { PoolConnectionFactory } from './mysql-transaction-connection';
 const {
   generateCountSql,
   generateInsertSql,
@@ -104,6 +105,34 @@ export class MySQLDatabase<DS> {
       return 0;
     } catch {
       throw new Error(`Count query failed!!!!`);
+    }
+  }
+}
+
+export class TransactionDatabase<DS> {
+  constructor(private readonly factory: PoolConnectionFactory) {}
+  async select<T extends keyof DS>(
+    tableName: T,
+    column: (keyof DS[T])[],
+    where: WhereExpression<DS[T]>,
+    pageOpts?: PageOption
+  ): Promise<DS[T][]> {
+    try {
+      const { sql, values } = generateSelectSql<DS[T]>(
+        tableName as string,
+        column,
+        where,
+        pageOpts
+      );
+
+      //const result = await this.adapter.runQuery<DS[T][]>(sql, values);
+      const result = (await this.factory.acquireTransactionConnection()).query<
+        ResultSetHeader[]
+      >(sql, values);
+      return result as Promise<DS[T][]>;
+    } catch (error) {
+      console.error('Error in select query:', error); // Debugging line
+      throw new Error(`select query failed!!!!`);
     }
   }
 }
