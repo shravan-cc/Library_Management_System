@@ -9,6 +9,7 @@ import { promptForValidInput } from '../core/input.utils';
 import { loadPage } from '../core/utils';
 import chalk from 'chalk';
 import { MySQLDatabase } from '../db/library-db';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 
 const searchSchema = z
   .string()
@@ -26,8 +27,8 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
-  private repo = new MemberRepository(this.db);
+  constructor(private readonly factory: PoolConnectionFactory) {}
+  private repo = new MemberRepository(this.factory);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {

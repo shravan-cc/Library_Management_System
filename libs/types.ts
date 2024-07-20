@@ -92,3 +92,8 @@ export interface Trainee {
   dob: string;
   address: string;
 }
+
+export interface DBConfig {
+  /** The complete url to the dbms along with protocol, port , user name and password  */
+  DbURL: string;
+}
