@@ -27,8 +27,8 @@ export class LibraryInteractor implements IInteractor {
   //   // join(__dirname, './data/db.json')
   // );
   private readonly bookInteractor = new BookInteractor(this.factory);
-  /*private readonly memberInteractor = new MemberInteractor(this.db);
-  private readonly transactionInteractor = new TransactionInteractor(this.db);*/
+  private readonly memberInteractor = new MemberInteractor(this.factory);
+  /*private readonly transactionInteractor = new TransactionInteractor(this.db);*/
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'
@@ -49,11 +49,11 @@ export class LibraryInteractor implements IInteractor {
           console.log(chalk.underline.blue.bold('\tBook Menu\n'));
           await this.bookInteractor.showMenu();
           break;
-        /*case '2':
+        case '2':
           console.log(chalk.underline.blue.bold('\tMember Menu\n'));
           await this.memberInteractor.showMenu();
           break;
-        case '3':
+        /*case '3':
           console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
           await this.transactionInteractor.showMenu();
           break; */

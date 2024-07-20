@@ -1,97 +1,181 @@
 import { IMember, IMemberBase } from './models/member.model';
 import { IRepository } from '../core/repository';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
-import { LibraryDataset } from '../db/library-dataset';
-import { MySQLDatabase } from '../db/library-db';
 import { PageOption, WhereExpression } from '../libs/types';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
+import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
+
+const {
+  generateCountSql,
+  generateInsertSql,
+  generateSelectSql,
+  generateDeleteSql,
+  generateUpdateSql,
+} = MySqlQueryGenerator;
 
 export class MemberRepository implements IRepository<IMemberBase, IMember> {
-  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
+  constructor(private readonly factory: PoolConnectionFactory) {}
 
-  async create(data: IMemberBase): Promise<IMember> {
-    const member: Omit<IMember, 'id'> = {
-      ...data,
-    };
-    const result = await this.db.insert('members', member);
-    const insertedMember = await this.getById(result.insertId);
+  async create(memberData: IMemberBase): Promise<IMember> {
+    const dbConnection = await this.factory.acquirePoolConnection();
+    try {
+      const newMember: Omit<IMember, 'id'> = {
+        ...memberData,
+      };
 
-    if (!insertedMember) {
-      throw new Error('Failed to retrieve the newly inserted member');
+      const { sql: insertSql, values: insertValues } =
+        generateInsertSql<IMemberBase>('members', newMember);
+
+      const queryResult = await dbConnection.query<ResultSetHeader>(
+        insertSql,
+        insertValues
+      );
+
+      const insertedMember = await this.getById(queryResult.insertId);
+
+      if (!insertedMember) {
+        throw new Error('Failed to retrieve the newly inserted member');
+      }
+
+      return insertedMember;
+    } catch (error: any) {
+      await dbConnection.release();
+      throw new Error(`Insertion failed: ${error.message}`);
+    } finally {
+      await dbConnection.release();
     }
-    return insertedMember;
   }
 
-  async update(id: number, data: IMemberBase): Promise<IMember | null> {
-    const existingMember = await this.getById(id);
-    if (!existingMember) {
-      return null;
+  async update(
+    memberId: number,
+    memberData: IMemberBase
+  ): Promise<IMember | null> {
+    const dbConnection = await this.factory.acquireTransactionPoolConnection();
+    try {
+      const existingMember = await this.getById(memberId);
+      if (!existingMember) {
+        return null;
+      }
+
+      const updatedMember = {
+        ...existingMember,
+        ...memberData,
+      };
+
+      const { sql: updateSql, values: updateValues } =
+        generateUpdateSql<IMember>('members', updatedMember, {
+          id: { op: 'EQUALS', value: memberId },
+        });
+
+      await dbConnection.query<ResultSetHeader>(updateSql, updateValues);
+
+      const editedMember = await this.getById(memberId);
+      if (!editedMember) {
+        await dbConnection.rollback();
+        throw new Error('Failed to retrieve the newly edited member');
+      }
+
+      await dbConnection.commit();
+      return editedMember;
+    } catch (error: any) {
+      await dbConnection.rollback();
+      throw new Error(`Update failed: ${error.message}`);
+    } finally {
+      await dbConnection.release();
     }
-    const updatedMember = {
-      ...existingMember,
-      ...data,
-    };
-    const result = await this.db.update('members', updatedMember, {
-      id: { op: 'EQUALS', value: id },
-    });
-    const editedMember = await this.getById(id);
-    if (!editedMember) {
-      throw new Error('Failed to retrieve the newly edited member');
-    }
-    return editedMember;
   }
 
   async delete(id: number): Promise<IMember | null> {
-    const existingMember = await this.getById(id);
-    if (!existingMember) {
-      return null;
+    const dbConnection = await this.factory.acquireTransactionPoolConnection();
+    try {
+      const existingMember = await this.getById(id);
+      if (!existingMember) {
+        return null;
+      }
+      const { sql, values } = generateDeleteSql<IMember>('members', {
+        id: { op: 'EQUALS', value: id },
+      });
+      await dbConnection.query<ResultSetHeader>(sql,values)
+      await dbConnection.commit();
+      return existingMember;
+    } catch (e: any) {
+      await dbConnection.rollback();
+      throw new Error(`Deletion failed: ${e.message}`);
+    } finally {
+      await dbConnection.release();
     }
-    await this.db.delete('members', { id: { op: 'EQUALS', value: id } });
-    return existingMember;
   }
 
   async getById(id: number): Promise<IMember | null> {
-    const result = await this.db.select('members', [], {
-      id: { op: 'EQUALS', value: id },
-    });
-    return result[0] || null;
+    const dbConnection = await this.factory.acquireTransactionPoolConnection();
+    try {
+      const { sql, values } = generateSelectSql<IMember>('members', [], {
+        id: { op: 'EQUALS', value: id },
+      });
+      const [rows] = await dbConnection.query<RowDataPacket[]>(sql, values);
+      await dbConnection.commit();
+      return (rows as IMember) || null;
+    } catch (e: any) {
+      await dbConnection.rollback();
+      throw new Error(`Selection failed: ${e.message}`);
+    } finally {
+      await dbConnection.release();
+    }
   }
 
   async list(params: IPageRequest): Promise<IPagedResponse<IMember>> {
-    const search = params.search?.toLowerCase();
-    let where: WhereExpression<IMember> = {};
-
-    if (search) {
-      where = {
-        OR: [
-          {
-            firstName: { op: 'CONTAINS', value: search },
-          },
-          {
-            lastName: { op: 'CONTAINS', value: search },
-          },
-        ],
-      };
-    }
-
-    const pageOpts: PageOption = {
-      offset: params.offset,
-      limit: params.limit,
-    };
-
+    const connection = await this.factory.acquireTransactionPoolConnection();
     try {
-      const books = await this.db.select('members', [], where, pageOpts);
-      const totalBooks = await this.db.count('members', where);
+      const search = params.search?.toLowerCase();
+      let where: WhereExpression<IMember> = {};
 
+      if (search) {
+        where = {
+          OR: [
+            {
+              firstName: { op: 'CONTAINS', value: search },
+            },
+            {
+              lastName: { op: 'CONTAINS', value: search },
+            },
+          ],
+        };
+      }
+
+      const pageOpts: PageOption = {
+        offset: params.offset,
+        limit: params.limit,
+      };
+
+      const { sql, values } = generateSelectSql<IMember>(
+        'members',
+        [],
+        where,
+        pageOpts
+      );
+      const members = await connection.query(sql, values);
+
+      const countSqlData = generateCountSql<IMember>('members', where);
+      const totalMemberRows = await connection.query(
+        countSqlData.sql,
+        countSqlData.values
+      );
+      const totalMembers = (totalMemberRows as any)[0].COUNT;
+      await connection.commit();
       return {
-        items: books || [],
+        items: members as IMember[],
         pagination: {
           offset: params.offset,
           limit: params.limit,
-          total: totalBooks as number,
+          total: totalMembers,
         },
       };
-    } catch (error) {
-      throw new Error('Failed to list members');
+    } catch (e: any) {
+      await connection.rollback();
+      throw new Error(`Listing Members failed: ${e.message}`);
+    } finally {
+      await connection.release();
     }
   }
 }
