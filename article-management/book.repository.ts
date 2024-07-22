@@ -189,9 +189,7 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
         where,
         pageOpts
       );
-      console.log(sql, values);
       const books = await connection.query(sql, values);
-      console.log(books);
 
       const countSqlData = generateCountSql('books', where);
       console.log(countSqlData.sql, countSqlData.values);
