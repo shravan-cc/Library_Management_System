@@ -178,9 +178,12 @@ async function deleteBook(repo: BookRepository) {
 }
 
 async function displayBooks(repo: BookRepository) {
-  const pageSize: number = +(await readLine(
+  let pageSize: number = +(await readLine(
     chalk.cyan('\nEnter the maximum number of records you want to display: ')
   ));
+  if (pageSize === 0) {
+    pageSize = 1;
+  }
   let currentPage: number = 0;
   await loadPage(repo, '', pageSize, currentPage);
 }

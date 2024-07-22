@@ -127,7 +127,7 @@ export class TransactionRepository
       );
       const transactions = await connection.query(sql, values);
       console.log(transactions);
-      const countSqlData = generateCountSql<ITransaction>('Transactions', {});
+      const countSqlData = generateCountSql<ITransaction>('transactions', {});
       const totalTransactionRows = await connection.query(
         countSqlData.sql,
         countSqlData.values

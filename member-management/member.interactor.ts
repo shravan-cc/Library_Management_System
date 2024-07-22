@@ -157,9 +157,12 @@ async function editMember(repo: MemberRepository) {
 }
 
 async function displayMembers(repo: MemberRepository) {
-  const limit = +(await readLine(
+  let limit = +(await readLine(
     chalk.cyan('\nEnter the maximum number of records you want to display: ')
   ));
+  if (limit === 0) {
+    limit = 1;
+  }
   let currentPage: number = 0;
   await loadPage(repo, '', limit, currentPage);
   /*const members = (await repo.list({ limit: 100, offset: 0 })).items;
