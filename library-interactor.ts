@@ -28,7 +28,9 @@ export class LibraryInteractor implements IInteractor {
   // );
   private readonly bookInteractor = new BookInteractor(this.factory);
   private readonly memberInteractor = new MemberInteractor(this.factory);
-  /*private readonly transactionInteractor = new TransactionInteractor(this.db);*/
+  private readonly transactionInteractor = new TransactionInteractor(
+    this.factory
+  );
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'
@@ -53,10 +55,10 @@ export class LibraryInteractor implements IInteractor {
           console.log(chalk.underline.blue.bold('\tMember Menu\n'));
           await this.memberInteractor.showMenu();
           break;
-        /*case '3':
+        case '3':
           console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
           await this.transactionInteractor.showMenu();
-          break; */
+          break;
         case '4':
           process.exit(0);
         default:

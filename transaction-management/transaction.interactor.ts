@@ -15,6 +15,7 @@ import {
 } from './models/transaction.model';
 import { formatDate, loadPage } from '../core/utils';
 import { MySQLDatabase } from '../db/library-db';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 
 const menu = new Menu([
   { key: '1', label: 'Issue A Book' },
@@ -23,7 +24,7 @@ const menu = new Menu([
   { key: '4', label: '<Previous Menu>' },
 ]);
 export class TransactionInteractor implements IInteractor {
-  constructor(private readonly db: MySQLDatabase<LibraryDataset>) {}
+  constructor(private readonly db: PoolConnectionFactory) {}
   private repo = new TransactionRepository(this.db);
   private bookRepo = new BookRepository(this.db);
   private memberRepo = new MemberRepository(this.db);
