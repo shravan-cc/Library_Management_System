@@ -111,13 +111,18 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
             )
           )
           .limit(params.limit)
-          .offset(params.offset)
-          .execute();
+          .offset(params.offset);
+      } else {
+        members = await this.db
+          .select()
+          .from(MemberTable)
+          .limit(params.limit)
+          .offset(params.offset);
       }
+
       const [result] = await this.db
         .select({ count: count() })
-        .from(MemberTable)
-        .execute();
+        .from(MemberTable);
       const totalCount = result.count;
 
       return {
