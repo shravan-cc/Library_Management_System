@@ -1,9 +1,8 @@
-import { Connection } from 'mysql2/typings/mysql/lib/Connection';
+import { ResultSetHeader } from 'mysql2/promise';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { PageOption, WhereExpression } from '../libs/types';
-import { MySQLAdapter } from './mysqldb';
-import { QueryResult, ResultSetHeader } from 'mysql2/promise';
 import { PoolConnectionFactory } from './mysql-transaction-connection';
+import { MySQLAdapter } from './mysqldb';
 const {
   generateCountSql,
   generateInsertSql,

@@ -31,7 +31,9 @@ export class Menu {
     const op = await readChar(this.serialize());
     const menuItem = this.getItem(op);
     if (menuItem) {
-      console.log(chalk.greenBright(`\nChoice: ${menuItem.key}.\t${menuItem.label}\n`));
+      console.log(
+        chalk.greenBright(`\nChoice: ${menuItem.key}.\t${menuItem.label}\n`)
+      );
     }
     return op;
   }

@@ -1,8 +1,8 @@
+import chalk from 'chalk';
 import { emitKeypressEvents } from 'node:readline';
 import { z } from 'zod';
 import { BookRepository } from '../article-management/book.repository';
 import { MemberRepository } from '../member-management/member.repository';
-import chalk from 'chalk';
 
 export const readLine = (question: string): Promise<string> => {
   return new Promise((resolve) => {

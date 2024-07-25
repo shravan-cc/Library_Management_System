@@ -1,6 +1,4 @@
 import mysql, { QueryResult } from 'mysql2/promise';
-import { captureRejectionSymbol } from 'node:events';
-import { string } from 'zod';
 export interface IConnection<QR> {
   initialize(): Promise<void>;
   query: <T extends QR>(sql: string, values: any) => Promise<T>;

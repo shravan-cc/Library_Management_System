@@ -1,12 +1,12 @@
 import chalk from 'chalk';
+import 'dotenv/config';
+import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { IRepository } from '../core/repository';
-import { IBook, IBookBase } from './models/book.model';
-import { PageOption, WhereExpression } from '../libs/types';
 import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
-import 'dotenv/config';
+import { PageOption, WhereExpression } from '../libs/types';
+import { IBook, IBookBase } from './models/book.model';
 
 const {
   generateCountSql,
