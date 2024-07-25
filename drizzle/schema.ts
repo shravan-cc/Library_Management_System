@@ -34,8 +34,18 @@ export const MemberTable = mysqlTable('members', {
 
 export const TransactionTable = mysqlTable('transactions', {
   id: serial('id').primaryKey().autoincrement(),
-  bookId: int('bookId').notNull(),
-  memberId: int('memberId').notNull(),
+  bookId: int('bookId')
+    .notNull()
+    .references(() => BookTable.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+  memberId: int('memberId')
+    .notNull()
+    .references(() => MemberTable.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
   borrowDate: varchar('borrowDate', { length: 10 }).notNull(),
   dueDate: varchar('dueDate', { length: 15 }).notNull(),
   status: varchar('status', { length: 15 }).notNull(),
