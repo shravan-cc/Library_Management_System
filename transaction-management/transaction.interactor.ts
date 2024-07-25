@@ -14,6 +14,7 @@ import {
   transactionBaseSchema,
 } from './models/transaction.model';
 import { TransactionRepository } from './transaction.repository';
+import { MySql2Database } from 'drizzle-orm/mysql2';
 
 const menu = new Menu([
   { key: '1', label: 'Issue A Book' },
@@ -22,7 +23,7 @@ const menu = new Menu([
   { key: '4', label: '<Previous Menu>' },
 ]);
 export class TransactionInteractor implements IInteractor {
-  constructor(private readonly db: PoolConnectionFactory) {}
+  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
   private repo = new TransactionRepository(this.db);
   private bookRepo = new BookRepository(this.db);
   private memberRepo = new MemberRepository(this.db);
