@@ -26,7 +26,7 @@ export class TransactionRepository
     try {
       const transaction: Omit<ITransaction, 'id'> = {
         ...data,
-        status: 'Not returned',
+        status: 'Issued',
       };
 
       const [result] = await this.db
@@ -71,7 +71,7 @@ export class TransactionRepository
         .where(
           and(
             eq(TransactionTable.id, transactionId),
-            eq(TransactionTable.status, 'Not Returned')
+            eq(TransactionTable.status, 'Issued')
           )
         );
       const [updatedTransaction] = await this.db
