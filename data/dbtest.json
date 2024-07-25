@@ -1,1 +1,37 @@
-{"books":[{"title":"The Mysterious Island","author":"Jules Verne","publisher":"Penguin Classics","genre":"Adventure","isbnNo":"9780140446029","numOfPages":320,"totalNumOfCopies":15,"id":1,"availableNumOfCopies":15},{"id":2,"title":"The Mysterious Island - Updated","author":"Jules Verne","publisher":"Penguin Classics","genre":"Adventure","isbnNo":"9780140446029","numOfPages":350,"totalNumOfCopies":15,"availableNumOfCopies":15},{"title":"The Mysterious Island","author":"Jules Verne","publisher":"Penguin Classics","genre":"Adventure","isbnNo":"9780140446029","numOfPages":320,"totalNumOfCopies":15,"id":3,"availableNumOfCopies":15}]}
+{
+  "books": [
+    {
+      "title": "The Mysterious Island",
+      "author": "Jules Verne",
+      "publisher": "Penguin Classics",
+      "genre": "Adventure",
+      "isbnNo": "9780140446029",
+      "numOfPages": 320,
+      "totalNumOfCopies": 15,
+      "id": 1,
+      "availableNumOfCopies": 15
+    },
+    {
+      "id": 2,
+      "title": "The Mysterious Island - Updated",
+      "author": "Jules Verne",
+      "publisher": "Penguin Classics",
+      "genre": "Adventure",
+      "isbnNo": "9780140446029",
+      "numOfPages": 350,
+      "totalNumOfCopies": 15,
+      "availableNumOfCopies": 15
+    },
+    {
+      "title": "The Mysterious Island",
+      "author": "Jules Verne",
+      "publisher": "Penguin Classics",
+      "genre": "Adventure",
+      "isbnNo": "9780140446029",
+      "numOfPages": 320,
+      "totalNumOfCopies": 15,
+      "id": 3,
+      "availableNumOfCopies": 15
+    }
+  ]
+}

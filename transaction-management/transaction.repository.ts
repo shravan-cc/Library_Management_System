@@ -1,17 +1,10 @@
-import {
-  ITransaction,
-  ITransactionBase,
-  RTransaction,
-} from './models/transaction.model';
-import { ITransactionRepository } from '../core/repository';
-import { LibraryDataset } from '../db/library-dataset';
+import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { IPagedResponse, IPageRequest } from '../core/pagination.response';
-import { MySQLDatabase } from '../db/library-db';
+import { ITransactionRepository } from '../core/repository';
 import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
-import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import { PageOption, WhereExpression } from '../libs/types';
-import { Console } from 'console';
+import { PageOption } from '../libs/types';
+import { ITransaction, ITransactionBase } from './models/transaction.model';
 
 const {
   generateCountSql,
@@ -26,7 +19,7 @@ export class TransactionRepository
 {
   constructor(private readonly factory: PoolConnectionFactory) {}
 
-  async issueBook(data: ITransactionBase): Promise<ITransaction> {
+  async create(data: ITransactionBase): Promise<ITransaction> {
     const dbConnection = await this.factory.acquirePoolConnection();
     try {
       const transaction: Omit<ITransaction, 'id'> = {
@@ -34,12 +27,14 @@ export class TransactionRepository
         status: 'Not returned',
       };
 
-      const { sql: insertSql, values: insertValues } =
-        generateInsertSql<ITransactionBase>('transactions', transaction);
+      const { sql, values } = generateInsertSql<ITransactionBase>(
+        'transactions',
+        transaction
+      );
 
       const queryResult = await dbConnection.query<ResultSetHeader>(
-        insertSql,
-        insertValues
+        sql,
+        values
       );
       const insertedTransaction = await this.getById(queryResult.insertId);
 
@@ -73,11 +68,11 @@ export class TransactionRepository
     }
   }
 
-  async returnBook(
+  async update(
     transactionId: number,
     returnDate: string
   ): Promise<ITransaction | null> {
-    const dbConnection = await this.factory.acquirePoolConnection();
+    const dbConnection = await this.factory.acquireTransactionPoolConnection();
     try {
       const { sql: updateSql, values: updateValues } =
         generateUpdateSql<ITransaction>(
@@ -103,8 +98,10 @@ export class TransactionRepository
       if (!updatedTransaction) {
         throw new Error('Failed to retrieve the newly updated transaction');
       }
+      await dbConnection.commit();
       return updatedTransaction;
     } catch (e: any) {
+      await dbConnection.rollback();
       throw new Error(`Selection failed: ${e.message}`);
     } finally {
       await dbConnection.release();

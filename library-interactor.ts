@@ -1,15 +1,13 @@
-import { IInteractor } from './core/interactor';
+import chalk from 'chalk';
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 import { BookInteractor } from './article-management/book.interactor';
+import { IInteractor } from './core/interactor';
 import { Menu } from './core/menu';
 import { MemberInteractor } from './member-management/member.interactor';
-import chalk from 'chalk';
-import { LibraryDataset } from './db/library-dataset';
-import { TransactionInteractor } from './transaction-management/transaction.interactor';
 import { AppEnvs } from './read-env';
-import { MySQLAdapter } from './db/mysqldb';
-import { MySQLDatabase } from './db/library-db';
-import 'dotenv/config';
-import { PoolConnectionFactory } from './db/mysql-transaction-connection';
+import { TransactionInteractor } from './transaction-management/transaction.interactor';
 
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
@@ -19,18 +17,16 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-  private readonly factory = new PoolConnectionFactory({
-    DbURL: AppEnvs.DATABASE_URL,
-  });
+  private readonly pool = mysql.createPool(AppEnvs.DATABASE_URL);
+  private readonly db = drizzle(this.pool);
+
   //private readonly db = new MySQLDatabase<LibraryDataset>(this.mySQLAdapter);
   // private readonly db = new Database<LibraryDataset>(
   //   // join(__dirname, './data/db.json')
   // );
-  private readonly bookInteractor = new BookInteractor(this.factory);
-  private readonly memberInteractor = new MemberInteractor(this.factory);
-  private readonly transactionInteractor = new TransactionInteractor(
-    this.factory
-  );
+  private readonly bookInteractor = new BookInteractor(this.db);
+  private readonly memberInteractor = new MemberInteractor(this.db);
+  private readonly transactionInteractor = new TransactionInteractor(this.db);
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'

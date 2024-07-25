@@ -1,11 +1,11 @@
+import 'dotenv/config';
 import { LibraryDataset } from '../db/library-dataset';
 import { MySQLDatabase } from '../db/library-db';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 import { MySQLAdapter } from '../db/mysqldb';
 import { AppEnvs } from '../read-env';
 import { BookRepository } from './book.repository';
-import 'dotenv/config';
 import { IBookBase } from './models/book.model';
-import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
 
 describe.skip('Tests for the mySql Book repository', () => {
   let adapter: MySQLAdapter;

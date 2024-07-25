@@ -1,16 +1,13 @@
-import { Query } from 'mysql2/typings/mysql/lib/protocol/sequences/Query';
 import {
-  WhereParamValue,
   AndWhereExpression,
-  OrWhereExpression,
-  SimpleWhereExpression,
-  WhereExpression,
-  PageOption,
-  StringOperator,
   ColumnData,
   NestedQuery,
+  OrWhereExpression,
+  PageOption,
+  SimpleWhereExpression,
+  WhereExpression,
+  WhereParamValue,
 } from './types';
-import { array } from 'zod';
 
 export interface QueryResult {
   sql: string;
