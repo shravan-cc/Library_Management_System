@@ -1,50 +1,39 @@
-import chalk from 'chalk';
 import { IPageRequest, IPagedResponse } from '../core/pagination.response';
 import { IRepository } from '../core/repository';
 import { IBook, IBookBase } from './models/book.model';
-import { PageOption, WhereExpression } from '../libs/types';
-import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
-import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import 'dotenv/config';
-
-const {
-  generateCountSql,
-  generateInsertSql,
-  generateSelectSql,
-  generateDeleteSql,
-  generateUpdateSql,
-} = MySqlQueryGenerator;
+import { MySql2Database } from 'drizzle-orm/mysql2';
+import { BooksTable } from '../database/src/drizzle/schema';
+import { count, eq, like, or } from 'drizzle-orm';
 
 export class BookRepository implements IRepository<IBookBase, IBook> {
-  constructor(private readonly factory: PoolConnectionFactory) {}
+  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
 
   async create(data: IBookBase): Promise<IBook> {
-    const connection = await this.factory.acquirePoolConnection();
     try {
-      const book: Omit<IBook, 'id'> = {
+      const newBookdata: Omit<IBook, 'id'> = {
         ...data,
         availableCopies: data.totalCopies,
       };
-
-      const { sql, values } = generateInsertSql<IBookBase>('books', book);
-      const result = await connection.query<ResultSetHeader>(sql, values);
-      const insertedBook = await this.getById(result.insertId);
+      const [queryResult] = await this.db
+        .insert(BooksTable)
+        .values(newBookdata)
+        .$returningId();
+      const [insertedBook] = await this.db
+        .select()
+        .from(BooksTable)
+        .where(eq(BooksTable.id, queryResult.id));
 
       if (!insertedBook) {
-        throw new Error('Failed to retrieve the newly inserted book');
+        throw new Error('Failed to retrive the newly inserted Book');
       }
-
       return insertedBook;
     } catch (e: any) {
       throw new Error(`Insertion failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 
   async update(id: number, data: IBookBase): Promise<IBook | null> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
     try {
       const existingBook = await this.getById(id);
       if (!existingBook) {
@@ -57,163 +46,100 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
         availableCopies: data.totalCopies,
       };
 
-      const { sql, values } = generateUpdateSql<IBook>('books', updatedBook, {
-        id: { op: 'EQUALS', value: id },
-      });
-      await connection.query<ResultSetHeader>(sql, values);
-      const editedBook = await this.getById(id);
+      await this.db
+        .update(BooksTable)
+        .set(updatedBook)
+        .where(eq(BooksTable.id, id));
 
+      const editedBook = await this.getById(id);
       if (!editedBook) {
         throw new Error('Failed to retrieve the updated book');
       }
-
-      await connection.commit();
       return editedBook;
     } catch (e: any) {
-      await connection.rollback();
       throw new Error(`Update failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 
   async delete(id: number): Promise<IBook | null> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
     try {
       const existingBook = await this.getById(id);
       if (!existingBook) {
         return null;
       }
-
-      const { sql, values } = generateDeleteSql<IBook>('books', {
-        id: { op: 'EQUALS', value: id },
-      });
-      await connection.query<ResultSetHeader>(sql, values);
-      await connection.commit();
+      await this.db.delete(BooksTable).where(eq(BooksTable.id, id));
       return existingBook;
     } catch (e: any) {
-      await connection.rollback();
       throw new Error(`Deletion failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 
   async getById(id: number): Promise<IBook | null> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
     try {
-      const { sql, values } = generateSelectSql<IBook>('books', [], {
-        id: { op: 'EQUALS', value: id },
-      });
-      const [rows] = await connection.query<RowDataPacket[]>(sql, values);
-      await connection.commit();
-      return (rows as IBook) || null;
+      const [result] = await this.db
+        .select()
+        .from(BooksTable)
+        .where(eq(BooksTable.id, id));
+      return (result as IBook) || null;
     } catch (e: any) {
-      await connection.rollback();
       throw new Error(`Selection failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 
-  async handleBook(id: number): Promise<boolean> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
+  async checkBookAvailability(id: number): Promise<boolean> {
     try {
       const existingBook = await this.getById(id);
       if (existingBook && existingBook.availableCopies > 0) {
-        existingBook.availableCopies -= 1;
-        const { sql, values } = generateUpdateSql<IBook>(
-          'books',
-          existingBook,
-          { id: { op: 'EQUALS', value: id } }
-        );
-        await connection.query<ResultSetHeader>(sql, values);
-        await connection.commit();
-        console.log(chalk.greenBright('Book issued successfully.'));
         return true;
       }
       return false;
     } catch (e: any) {
-      await connection.rollback();
       throw new Error(`Handling book failed: ${e.message}`);
-    } finally {
-      await connection.release();
-    }
-  }
-
-  async returnBook(id: number): Promise<void> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
-    try {
-      const existingBook = await this.getById(id);
-      if (existingBook) {
-        existingBook.availableCopies += 1;
-        const { sql, values } = generateUpdateSql<IBook>(
-          'books',
-          existingBook,
-          { id: { op: 'EQUALS', value: id } }
-        );
-        await connection.query<ResultSetHeader>(sql, values);
-        await connection.commit();
-      }
-    } catch (e: any) {
-      await connection.rollback();
-      throw new Error(`Return book failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 
   async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
-    const connection = await this.factory.acquireTransactionPoolConnection();
     try {
       const search = params.search?.toLowerCase();
-      let where: WhereExpression<IBook> = {};
-
+      let books;
+      let result;
       if (search) {
-        where = {
-          OR: [
-            { title: { op: 'CONTAINS', value: search } },
-            { isbnNo: { op: 'CONTAINS', value: search } },
-          ],
-        };
+        books = await this.db
+          .select()
+          .from(BooksTable)
+          .where(
+            or(like(BooksTable.title, search), like(BooksTable.isbnNo, search))
+          )
+          .limit(params.limit)
+          .offset(params.offset)
+          .execute();
+        result = await this.db
+          .select({ count: count() })
+          .from(BooksTable)
+          .where(
+            or(like(BooksTable.title, search), like(BooksTable.isbnNo, search))
+          );
+      } else {
+        books = await this.db
+          .select()
+          .from(BooksTable)
+          .limit(params.limit)
+          .offset(params.offset);
+        result = await this.db.select({ count: count() }).from(BooksTable);
       }
 
-      const pageOpts: PageOption = {
-        offset: params.offset,
-        limit: params.limit,
-      };
+      const totalCount = result[0].count;
 
-      const { sql, values } = generateSelectSql<IBook>(
-        'books',
-        [],
-        where,
-        pageOpts
-      );
-      const books = await connection.query(sql, values);
-
-      const countSqlData = generateCountSql('books', where);
-      console.log(countSqlData.sql, countSqlData.values);
-      const totalBooksRows = await connection.query(
-        countSqlData.sql,
-        countSqlData.values
-      );
-      const totalBooks = (totalBooksRows as any)[0].COUNT;
-      console.log(totalBooks);
-
-      await connection.commit();
       return {
         items: books as IBook[],
         pagination: {
           offset: params.offset,
           limit: params.limit,
-          total: totalBooks,
+          total: totalCount,
         },
       };
     } catch (e: any) {
-      await connection.rollback();
       throw new Error(`Listing books failed: ${e.message}`);
-    } finally {
-      await connection.release();
     }
   }
 }

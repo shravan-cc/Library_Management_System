@@ -11,6 +11,9 @@ import { MySQLDatabase } from './db/library-db';
 import 'dotenv/config';
 import { PoolConnectionFactory } from './db/mysql-transaction-connection';
 
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
+
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
   { key: '2', label: 'Member Management' },
@@ -19,18 +22,18 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-  private readonly factory = new PoolConnectionFactory({
-    DbURL: AppEnvs.DATABASE_URL,
-  });
-  //private readonly db = new MySQLDatabase<LibraryDataset>(this.mySQLAdapter);
-  // private readonly db = new Database<LibraryDataset>(
-  //   // join(__dirname, './data/db.json')
+  // private readonly factory = new PoolConnectionFactory({
+  //   DbURL: AppEnvs.DATABASE_URL,
+
+  // });
+  private readonly pool = mysql.createPool(AppEnvs.DATABASE_URL);
+  private readonly db = drizzle(this.pool);
+
+  private readonly bookInteractor = new BookInteractor(this.db);
+  // private readonly memberInteractor = new MemberInteractor(this.factory);
+  // private readonly transactionInteractor = new TransactionInteractor(
+  //   this.factory
   // );
-  private readonly bookInteractor = new BookInteractor(this.factory);
-  private readonly memberInteractor = new MemberInteractor(this.factory);
-  private readonly transactionInteractor = new TransactionInteractor(
-    this.factory
-  );
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'
@@ -53,13 +56,14 @@ export class LibraryInteractor implements IInteractor {
           break;
         case '2':
           console.log(chalk.underline.blue.bold('\tMember Menu\n'));
-          await this.memberInteractor.showMenu();
+          // await this.memberInteractor.showMenu();
           break;
         case '3':
           console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
-          await this.transactionInteractor.showMenu();
+          // await this.transactionInteractor.showMenu();
           break;
         case '4':
+          // this.factory.shutdown();
           process.exit(0);
         default:
           console.log(chalk.redBright('\nInvalid choice!'));

@@ -9,6 +9,7 @@ import { loadPage } from '../core/utils';
 import chalk from 'chalk';
 import { MySQLDatabase } from '../db/library-db';
 import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
+import { MySql2Database } from 'drizzle-orm/mysql2';
 
 const menu = new Menu([
   { key: '1', label: 'Add Book' },
@@ -20,8 +21,8 @@ const menu = new Menu([
 ]);
 
 export class BookInteractor implements IInteractor {
-  constructor(private readonly factory: PoolConnectionFactory) {}
-  private repo = new BookRepository(this.factory);
+  constructor(private readonly db: MySql2Database) {}
+  private repo = new BookRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {

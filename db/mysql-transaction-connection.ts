@@ -203,11 +203,16 @@ export class PoolConnectionFactory implements IConnectionFactory<QueryResult> {
     await connection.initialize();
     return connection;
   }
+  
   async acquireTransactionPoolConnection(): Promise<
     TransactionPoolConnection<QueryResult>
   > {
     const connection = new MySQLTransactionPoolConnection(this.pool);
     await connection.initialize();
     return connection;
+  }
+
+  async shutdown() {
+    this.pool.end();
   }
 }

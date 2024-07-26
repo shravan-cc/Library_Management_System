@@ -4,20 +4,25 @@
   "description": "Efficiently manage book inventories, member information, and borrowing transactions with ease.",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "tsx watch src/main.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "ts-node ./database/src/drizzle/migrate.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.14.9",
+    "dotenv": "16.4.5",
+    "drizzle-kit": "^0.23.0",
+    "mysql2": "^3.10.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
-    "vitest": "^1.6.0",
-    "dotenv": "16.4.5",
-    "mysql2": "3.10.2"
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "chalk": "^4.1.2",
+    "drizzle-orm": "^0.32.1",
     "zod": "^3.23.8"
   }
 }
