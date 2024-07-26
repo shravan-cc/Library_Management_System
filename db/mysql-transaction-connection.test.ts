@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { IBook } from '../article-management/models/book.model';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { WhereExpression } from '../libs/types';
@@ -5,7 +6,6 @@ import { AppEnvs } from '../read-env';
 import { LibraryDataset } from './library-dataset';
 import { TransactionDatabase } from './library-db';
 import { PoolConnectionFactory } from './mysql-transaction-connection';
-import 'dotenv/config';
 
 describe('Test blocks for the Transaction connection', () => {
   let factory: PoolConnectionFactory;

@@ -1,9 +1,7 @@
-import { describe, expect, test, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
+import { IBook, IBookBase } from '../article-management/models/book.model';
 import { MySqlQueryGenerator } from './mysql-query-generator';
-import { SimpleWhereExpression, Trainee, WhereExpression } from './types';
-import { IBookBase, IBook } from '../article-management/models/book.model';
-import exp from 'constants';
-import { string } from 'zod';
+import { Trainee, WhereExpression } from './types';
 
 describe.skip('Test blocks for getting queries from the functions', () => {
   let tableName: string;

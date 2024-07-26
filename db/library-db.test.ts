@@ -1,13 +1,12 @@
-import { describe, expect, test, beforeEach } from 'vitest';
 import 'dotenv/config';
+import { beforeEach, describe, test } from 'vitest';
+import { IBook } from '../article-management/models/book.model';
+import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
+import { WhereExpression } from '../libs/types';
+import { AppEnvs } from '../read-env';
+import { LibraryDataset } from './library-dataset';
 import { MySQLDatabase } from './library-db';
 import { MySQLAdapter } from './mysqldb';
-import { AppEnvs } from '../read-env';
-import { IBook, IBookBase } from '../article-management/models/book.model';
-import { Trainee, WhereExpression } from '../libs/types';
-import { LibraryDataset } from './library-dataset';
-import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
-import { title } from 'process';
 
 describe.skip('Test blocks for all the queries', async () => {
   let adapter: MySQLAdapter;

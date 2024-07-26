@@ -15,8 +15,8 @@ export interface ITransactionRepository<
   MutationModel,
   CompleteModel extends MutationModel
 > {
-  issueBook(data: MutationModel): Promise<CompleteModel>;
-  returnBook(
+  create(data: MutationModel): Promise<CompleteModel>;
+  update(
     transactionId: number,
     returnDate: string
   ): Promise<CompleteModel | null>;

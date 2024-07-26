@@ -12,7 +12,7 @@
 //     2. Return A Book
 // 4. Today's due list
 
-import { LibraryInteractor } from "./library-interactor";
+import { LibraryInteractor } from './library-interactor';
 
 const libInteractor = new LibraryInteractor();
 

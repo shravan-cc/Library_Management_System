@@ -1,14 +1,11 @@
-import { describe, beforeEach, test, expect } from 'vitest';
-import { MemberRepository } from './member.repository';
-import { IMemberBase } from './models/member.model';
-import { Database } from '../db/db';
+import 'dotenv/config';
+import { beforeEach, describe, test } from 'vitest';
 import { LibraryDataset } from '../db/library-dataset';
-import { join } from 'path';
 import { MySQLDatabase } from '../db/library-db';
 import { MySQLAdapter } from '../db/mysqldb';
-import { BookRepository } from '../article-management/book.repository';
 import { AppEnvs } from '../read-env';
-import 'dotenv/config';
+import { MemberRepository } from './member.repository';
+import { IMemberBase } from './models/member.model';
 
 /*describe.skip('Tests for MemberRepository class methods', () => {
   let memberRepository: MemberRepository;

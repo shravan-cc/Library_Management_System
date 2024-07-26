@@ -1,10 +1,10 @@
-import { test, expect } from 'vitest';
-import { MySQLAdapter } from './mysqldb';
-import { AppEnvs } from '../read-env';
 import 'dotenv/config';
-import { SimpleWhereExpression } from '../libs/types';
+import { test } from 'vitest';
 import { IBook } from '../article-management/models/book.model';
 import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
+import { SimpleWhereExpression } from '../libs/types';
+import { AppEnvs } from '../read-env';
+import { MySQLAdapter } from './mysqldb';
 describe.skip('my sql db adapter tests', () => {
   const { generateSelectSql } = MySqlQueryGenerator;
   let mySQLAdapter: MySQLAdapter;

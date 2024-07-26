@@ -1,21 +1,20 @@
 import chalk from 'chalk';
-import { IInteractor } from '../core/interactor';
-import { Menu } from '../core/menu';
-import { LibraryDataset } from '../db/library-dataset';
-import { TransactionRepository } from './transaction.repository';
 import { z } from 'zod';
 import { BookRepository } from '../article-management/book.repository';
-import { MemberRepository } from '../member-management/member.repository';
 import { promptForValidInput, readLine } from '../core/input.utils';
+import { IInteractor } from '../core/interactor';
+import { Menu } from '../core/menu';
+import { formatDate, loadPage } from '../core/utils';
+import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
+import { MemberRepository } from '../member-management/member.repository';
 import {
   ITransactionBase,
-  transactionBaseSchema,
   RTransaction,
   returnSchema,
+  transactionBaseSchema,
 } from './models/transaction.model';
-import { formatDate, loadPage } from '../core/utils';
-import { MySQLDatabase } from '../db/library-db';
-import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
+import { TransactionRepository } from './transaction.repository';
+import { MySql2Database } from 'drizzle-orm/mysql2';
 
 const menu = new Menu([
   { key: '1', label: 'Issue A Book' },
@@ -24,7 +23,7 @@ const menu = new Menu([
   { key: '4', label: '<Previous Menu>' },
 ]);
 export class TransactionInteractor implements IInteractor {
-  constructor(private readonly db: PoolConnectionFactory) {}
+  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
   private repo = new TransactionRepository(this.db);
   private bookRepo = new BookRepository(this.db);
   private memberRepo = new MemberRepository(this.db);
@@ -113,7 +112,7 @@ async function issueBook(
   memberRepo: MemberRepository
 ) {
   const transaction = await getTransactionInput(bookRepo, memberRepo);
-  const createdTransaction = await repo.issueBook(transaction);
+  const createdTransaction = await repo.create(transaction);
   console.table(createdTransaction);
 }
 
@@ -122,7 +121,7 @@ async function returnBook(
   bookRepo: BookRepository
 ) {
   const transaction = await getReturnBookInputs(repo);
-  const returnedBookTransaction = await repo.returnBook(
+  const returnedBookTransaction = await repo.update(
     transaction.id,
     transaction.returnDate
   );
@@ -164,9 +163,12 @@ async function displayTransaction(repo: TransactionRepository) {
       console.log(chalk.yellowBright('The book has not been returned yet.'));
     }
   } else if (transactionId === 0) {
-    const limit = +(await readLine(
+    let limit = +(await readLine(
       chalk.cyan('\nEnter the maximum number of records you want to display: ')
     ));
+    if (limit === 0) {
+      limit = 1;
+    }
     let currentPage: number = 0;
     await loadPage(repo, '', limit, currentPage);
   } else {

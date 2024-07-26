@@ -1,5 +1,3 @@
-import { CompleterResult } from 'readline';
-
 export type ColumnData = string | number | boolean | null;
 
 export type StringOperator =

@@ -1,15 +1,12 @@
-import { IInteractor } from '../core/interactor';
-import { MemberRepository } from './member.repository';
-import { readLine } from '../core/input.utils';
-import { Menu } from '../core/menu';
-import { IMemberBase, memberBaseSchema } from './models/member.model';
-import { z } from 'zod';
-import { LibraryDataset } from '../db/library-dataset';
-import { promptForValidInput } from '../core/input.utils';
-import { loadPage } from '../core/utils';
 import chalk from 'chalk';
-import { MySQLDatabase } from '../db/library-db';
-import { PoolConnectionFactory } from '../db/mysql-transaction-connection';
+import { MySql2Database } from 'drizzle-orm/mysql2';
+import { z } from 'zod';
+import { promptForValidInput, readLine } from '../core/input.utils';
+import { IInteractor } from '../core/interactor';
+import { Menu } from '../core/menu';
+import { loadPage } from '../core/utils';
+import { MemberRepository } from './member.repository';
+import { IMemberBase, memberBaseSchema } from './models/member.model';
 
 const searchSchema = z
   .string()
@@ -27,8 +24,8 @@ const menu = new Menu([
   { key: '6', label: '<Previous Menu>' },
 ]);
 export class MemberInteractor implements IInteractor {
-  constructor(private readonly factory: PoolConnectionFactory) {}
-  private repo = new MemberRepository(this.factory);
+  constructor(private readonly db: MySql2Database<Record<string, unknown>>) {}
+  private repo = new MemberRepository(this.db);
   async showMenu(): Promise<void> {
     let loop: boolean = true;
     while (loop) {

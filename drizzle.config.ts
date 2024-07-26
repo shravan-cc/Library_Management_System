@@ -1,10 +1,9 @@
-import { defineConfig } from 'drizzle-kit';
 import 'dotenv/config';
+import { defineConfig } from 'drizzle-kit';
 import { AppEnvs } from './read-env';
-
 export default defineConfig({
-  schema: './database/src/drizzle/schema.ts',
-  out: './database/src/drizzle/migrations',
+  schema: './drizzle/schema.ts',
+  out: './drizzle/migrations',
   dialect: 'mysql',
   dbCredentials: {
     url: AppEnvs.DATABASE_URL,
