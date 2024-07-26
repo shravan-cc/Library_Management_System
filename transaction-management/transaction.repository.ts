@@ -6,7 +6,7 @@ import { MySqlQueryGenerator } from '../libs/mysql-query-generator';
 import { PageOption } from '../libs/types';
 import { ITransaction, ITransactionBase } from './models/transaction.model';
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { TransactionTable } from '../drizzle/schema';
+import { BookTable, TransactionTable } from '../drizzle/schema';
 import { and, count, eq } from 'drizzle-orm';
 
 const {
@@ -38,6 +38,15 @@ export class TransactionRepository
         .from(TransactionTable)
         .where(eq(TransactionTable.id, result.id));
       //const insertedTransaction = await this.getById(result.insertId);
+      const [bookDetails] = await this.db
+        .select()
+        .from(BookTable)
+        .where(eq(BookTable.id, insertedTransaction.bookId));
+
+      await this.db
+        .update(BookTable)
+        .set({ availableCopies: bookDetails.availableCopies - 1 })
+        .where(eq(BookTable.id, bookDetails.id));
 
       if (!insertedTransaction) {
         throw new Error('Failed to retrieve the newly inserted transaction');
@@ -78,6 +87,16 @@ export class TransactionRepository
         .select()
         .from(TransactionTable)
         .where(eq(TransactionTable.id, transactionId));
+
+      const [bookDetails] = await this.db
+        .select()
+        .from(BookTable)
+        .where(eq(BookTable.id, updatedTransaction.bookId));
+
+      await this.db
+        .update(BookTable)
+        .set({ availableCopies: bookDetails.availableCopies + 1 })
+        .where(eq(BookTable.id, bookDetails.id));
 
       if (!updatedTransaction) {
         throw new Error('Failed to retrieve the newly updated transaction');

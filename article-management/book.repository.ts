@@ -1,6 +1,3 @@
-import { IPageRequest, IPagedResponse } from '../core/pagination.response';
-import { IRepository } from '../core/repository';
-import { IBook, IBookBase } from './models/book.model';
 import 'dotenv/config';
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import { BooksTable } from '../database/src/drizzle/schema';
@@ -107,32 +104,25 @@ export class BookRepository implements IRepository<IBookBase, IBook> {
   async list(params: IPageRequest): Promise<IPagedResponse<IBook>> {
     try {
       const search = params.search?.toLowerCase();
-      let books;
-      let result;
-      if (search) {
-        books = await this.db
-          .select()
-          .from(BooksTable)
-          .where(
-            or(like(BooksTable.title, search), like(BooksTable.isbnNo, search))
+      const whereExpression = search
+        ? or(
+            like(BooksTable.title, `%${search}%`),
+            like(BooksTable.isbnNo, `%${search}%`)
           )
-          .limit(params.limit)
-          .offset(params.offset)
-          .execute();
-        result = await this.db
-          .select({ count: count() })
-          .from(BooksTable)
-          .where(
-            or(like(BooksTable.title, search), like(BooksTable.isbnNo, search))
-          );
-      } else {
-        books = await this.db
-          .select()
-          .from(BooksTable)
-          .limit(params.limit)
-          .offset(params.offset);
-        result = await this.db.select({ count: count() }).from(BooksTable);
-      }
+        : undefined;
+
+      const books = await this.db
+        .select()
+        .from(BooksTable)
+        .where(whereExpression)
+        .limit(params.limit)
+        .offset(params.offset)
+        .execute();
+
+      const result = await this.db
+        .select({ count: count() })
+        .from(BooksTable)
+        .where(whereExpression);
 
       const totalCount = result[0].count;
 

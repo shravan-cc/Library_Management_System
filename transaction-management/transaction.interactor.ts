@@ -127,7 +127,7 @@ async function returnBook(
   );
 
   if (returnedBookTransaction) {
-    bookRepo.returnBook(returnedBookTransaction.bookId);
+    //bookRepo.returnBook(returnedBookTransaction.bookId);
     const book = await bookRepo.getById(returnedBookTransaction.bookId);
     console.log(
       chalk.greenBright(
