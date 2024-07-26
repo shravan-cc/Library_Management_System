@@ -64,7 +64,7 @@ export async function promptForValidInput<T>(
           ) {
             continue;
           }
-          const bookAvailable = await repo.handleBook(id);
+          const bookAvailable = await repo.checkBookAvailability(id);
           if (!bookAvailable) {
             console.log(
               chalk.red('There are no copies available for this book')

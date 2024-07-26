@@ -99,30 +99,25 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
   async list(params: IPageRequest): Promise<IPagedResponse<IMember>> {
     try {
       const search = params.search?.toLowerCase();
-      let members;
-      if (search) {
-        members = await this.db
-          .select()
-          .from(MemberTable)
-          .where(
-            or(
-              like(MemberTable.firstName, search),
-              like(MemberTable.lastName, search)
-            )
+      const whereExpression = search
+        ? or(
+            like(MemberTable.firstName, `%${search}%`),
+            like(MemberTable.lastName, `%${search}%`)
           )
-          .limit(params.limit)
-          .offset(params.offset);
-      } else {
-        members = await this.db
-          .select()
-          .from(MemberTable)
-          .limit(params.limit)
-          .offset(params.offset);
-      }
+        : undefined;
+
+      const members = await this.db
+        .select()
+        .from(MemberTable)
+        .where(whereExpression)
+        .limit(params.limit)
+        .offset(params.offset);
 
       const [result] = await this.db
         .select({ count: count() })
-        .from(MemberTable);
+        .from(MemberTable)
+        .where(whereExpression);
+
       const totalCount = result.count;
 
       return {

@@ -9,9 +9,6 @@ import { MemberInteractor } from './member-management/member.interactor';
 import { AppEnvs } from './read-env';
 import { TransactionInteractor } from './transaction-management/transaction.interactor';
 
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
-
 const menu = new Menu([
   { key: '1', label: 'Book Management' },
   { key: '2', label: 'Member Management' },
@@ -20,7 +17,6 @@ const menu = new Menu([
 ]);
 
 export class LibraryInteractor implements IInteractor {
-
   private readonly pool = mysql.createPool(AppEnvs.DATABASE_URL);
   private readonly db = drizzle(this.pool);
 
@@ -31,7 +27,7 @@ export class LibraryInteractor implements IInteractor {
   private readonly bookInteractor = new BookInteractor(this.db);
   private readonly memberInteractor = new MemberInteractor(this.db);
   private readonly transactionInteractor = new TransactionInteractor(this.db);
-  
+
   async showMenu(): Promise<void> {
     console.log(
       '+---------------------------------------------------------------+'
@@ -54,11 +50,11 @@ export class LibraryInteractor implements IInteractor {
           break;
         case '2':
           console.log(chalk.underline.blue.bold('\tMember Menu\n'));
-          // await this.memberInteractor.showMenu();
+          await this.memberInteractor.showMenu();
           break;
         case '3':
           console.log(chalk.underline.blue.bold('\tTransaction Menu\n'));
-          // await this.transactionInteractor.showMenu();
+          await this.transactionInteractor.showMenu();
           break;
         case '4':
           // this.factory.shutdown();
