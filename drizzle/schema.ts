@@ -28,8 +28,11 @@ export const MemberTable = mysqlTable('members', {
   id: serial('id').primaryKey().autoincrement(),
   firstName: varchar('firstName', { length: 50 }).notNull(),
   lastName: varchar('lastName', { length: 50 }).notNull(),
-  phone: bigint('phone', { mode: 'number' }).notNull(),
+  phone: bigint('phone', { mode: 'number' }).unique().notNull(),
   address: varchar('address', { length: 100 }).notNull(),
+  password: varchar('password', { length: 100 }).notNull(),
+  email: varchar('email', { length: 100 }).unique().notNull(),
+  refreshToken: varchar('refreshToken', { length: 100 }).unique(),
 });
 
 export const TransactionTable = mysqlTable('transactions', {

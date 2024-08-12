@@ -36,6 +36,14 @@ export const memberBaseSchema = z.object({
     .string()
     .trim()
     .min(5, 'Address must be at least 5 characters long'),
+  email: z
+    .string()
+    .trim()
+    .email({ message: 'Invalid email address' })
+    .min(5, { message: 'Email must be at least 5 characters long' })
+    .max(255, { message: 'Email must be no longer than 255 characters' }),
+
+  password: z.string(),
 });
 
 export const memberSchema = memberBaseSchema.extend({
@@ -43,6 +51,7 @@ export const memberSchema = memberBaseSchema.extend({
     .number()
     .int({ message: 'ID must be an integer' })
     .positive({ message: 'ID must be a positive integer' }),
+  refreshToken: z.union([z.string(), z.null()]),
 });
 
 export type IMemberBase = z.infer<typeof memberBaseSchema>;
