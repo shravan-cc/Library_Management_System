@@ -30,10 +30,7 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
       }
       return insertedMember as IMember;
     } catch (error: any) {
-      // await db.release();
       throw new Error(`Insertion failed: ${error.message}`);
-    } finally {
-      // await db.release();
     }
   }
 
