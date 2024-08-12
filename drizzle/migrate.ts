@@ -1,7 +1,6 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import { migrate } from 'drizzle-orm/mysql2/migrator';
 import mysql from 'mysql2/promise';
-import { UserTable } from './schema';
 // Create a function to initialize the database connection and perform migrations
 async function initializeDb() {
   // Database URL
@@ -14,7 +13,8 @@ async function initializeDb() {
   //   Perform migrations
   await migrate(drizzle(migrationClient), {
     migrationsFolder:
-      'c:/Users/vigneshtr/projects/Library_Management_System/drizzle/migrations', // Adjust this path to your migrations folder
+      '/home/preethesh/assignment-repo/Library_Management_System_Project/Library_Management_System/drizzle/migrations', // Adjust this path to your migrations folder
   });
   await migrationClient.end();
 }
+initializeDb();

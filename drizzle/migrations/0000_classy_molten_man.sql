@@ -18,7 +18,13 @@ CREATE TABLE `members` (
 	`lastName` varchar(50) NOT NULL,
 	`phone` bigint NOT NULL,
 	`address` varchar(100) NOT NULL,
-	CONSTRAINT `members_id` PRIMARY KEY(`id`)
+	`password` varchar(100) NOT NULL,
+	`email` varchar(100) NOT NULL,
+	`refreshToken` varchar(100),
+	CONSTRAINT `members_id` PRIMARY KEY(`id`),
+	CONSTRAINT `members_phone_unique` UNIQUE(`phone`),
+	CONSTRAINT `members_email_unique` UNIQUE(`email`),
+	CONSTRAINT `members_refreshToken_unique` UNIQUE(`refreshToken`)
 );
 --> statement-breakpoint
 CREATE TABLE `transactions` (
@@ -31,3 +37,14 @@ CREATE TABLE `transactions` (
 	`returnDate` varchar(10),
 	CONSTRAINT `transactions_id` PRIMARY KEY(`id`)
 );
+--> statement-breakpoint
+CREATE TABLE `user` (
+	`id` serial AUTO_INCREMENT NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`email` varchar(100) NOT NULL,
+	CONSTRAINT `user_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_email_unique` UNIQUE(`email`)
+);
+--> statement-breakpoint
+ALTER TABLE `transactions` ADD CONSTRAINT `transactions_bookId_books_id_fk` FOREIGN KEY (`bookId`) REFERENCES `books`(`id`) ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE `transactions` ADD CONSTRAINT `transactions_memberId_members_id_fk` FOREIGN KEY (`memberId`) REFERENCES `members`(`id`) ON DELETE cascade ON UPDATE cascade;

@@ -12,6 +12,7 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     try {
       const newMember: Omit<IMember, 'id'> = {
         ...memberData,
+        refreshToken: null,
       };
 
       const [result] = await this.db
@@ -36,7 +37,7 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
 
   async update(
     memberId: number,
-    memberData: IMemberBase
+    memberData: Partial<IMember>
   ): Promise<IMember | null> {
     try {
       const existingMember = await this.getById(memberId);
@@ -128,6 +129,52 @@ export class MemberRepository implements IRepository<IMemberBase, IMember> {
     } catch (e: any) {
       throw new Error(`Listing Members failed: ${e.message}`);
     } finally {
+    }
+  }
+
+  async getByEmail(email: string): Promise<IMember | null> {
+    try {
+      const [result] = await this.db
+        .select()
+        .from(MemberTable)
+        .where(eq(MemberTable.email, email));
+
+      return (result as IMember) || null;
+    } catch (e: any) {
+      throw new Error(`Selection by email failed: ${e.message}`);
+    }
+  }
+
+  async getByRefreshToken(refreshToken: string): Promise<IMember | null> {
+    try {
+      const [result] = await this.db
+        .select()
+        .from(MemberTable)
+        .where(eq(MemberTable.refreshToken, refreshToken));
+
+      return (result as IMember) || null;
+    } catch (e: any) {
+      throw new Error(`Selection by refreshToken failed: ${e.message}`);
+    }
+  }
+
+  async clearRefreshToken(memberId: number): Promise<IMember | null> {
+    try {
+      const existingMember = await this.getById(memberId);
+      if (!existingMember) {
+        return null;
+      }
+
+      const updatedMember = { ...existingMember, refreshToken: null };
+
+      await this.db
+        .update(MemberTable)
+        .set(updatedMember)
+        .where(eq(MemberTable.id, memberId));
+
+      return updatedMember;
+    } catch (error: any) {
+      throw new Error(`Failed to clear refresh token: ${error.message}`);
     }
   }
 }
