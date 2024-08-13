@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { IBook } from '../../article-management/models/book.model';
 import { IMemberBase } from '../../member-management/models/member.model';
+import { ITransactionBase } from '../../transaction-management/models/transaction.model';
 
 export const validateBookDataMiddleware = (
   request: Request,
@@ -53,3 +54,27 @@ export const validateMemberDataMiddleware = (
   next();
 };
 
+export const validateTransactionDataMiddleware = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  if (request.method === 'POST' || request.method === 'PATCH') {
+    const body = request.body;
+    const isValidTransaction = (data: any): data is ITransactionBase => {
+      return (
+        typeof data.memberId === 'number' &&
+        typeof data.bookId === 'number' &&
+        typeof data.borrowDate === 'string' &&
+        typeof data.dueDate === 'string'
+      );
+    };
+
+    if (!isValidTransaction(body)) {
+      return response
+        .status(400)
+        .json({ error: 'Invalid transaction data format' });
+    }
+  }
+  next();
+};
