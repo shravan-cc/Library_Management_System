@@ -12,16 +12,23 @@ export const db: MySql2Database<Record<string, never>> = drizzle(pool);
 const memberRepo = new MemberRepository(db);
 
 export const handleRegister = async (req: Request, res: Response) => {
-  const { firstName, lastName, phone, address, email, password } = req.body;
+  const { firstName, lastName, phone, address, role, email, password } =
+    req.body;
 
   if (!firstName || !lastName || !phone || !address || !email || !password) {
-    return res.status(400).json({ error: 'All fields are required.' });
+    return res
+      .status(400)
+      .json({ error: 'Oops! Please fill in all the fields.' });
   }
 
   try {
     const existingUser = await memberRepo.getByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ error: 'User already exists.' });
+      return res
+        .status(409)
+        .json({
+          error: 'Looks like this email is already registered. Try logging in!',
+        });
     }
 
     const hashedPwd = await bcrypt.hash(password, 10);
@@ -31,15 +38,16 @@ export const handleRegister = async (req: Request, res: Response) => {
       lastName,
       phone,
       address,
+      role,
       email,
       password: hashedPwd,
     };
-      
+
     const createdUser = await memberRepo.create(newUser);
 
-    res
-      .status(201)
-      .json({ message: `User ${createdUser.email} created successfully!` });
+    res.status(201).json({
+      message: `${createdUser.firstName} ${createdUser.lastName}! Your registration was successful`,
+    });
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).json({ error: 'Internal Server Error' });

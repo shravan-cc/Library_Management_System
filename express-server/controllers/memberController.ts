@@ -19,6 +19,10 @@ export const getMemberByIdHandler = async (
     return response.status(400).json({ error: 'Invalid Member ID' });
   }
 
+  if (request.user.id !== memberId) {
+    return response.status(400).json({ error: 'Unauthorized access.' });
+  }
+
   try {
     const member = await memberRepo.getById(memberId);
     if (member) {
@@ -39,7 +43,6 @@ export const listMembersHandler = async (
   const search = (request.query.search as string) || '';
   const limit = Number(request.query.limit) || 10;
   const offset = Number(request.query.offset) || 0;
-
   try {
     const members = await memberRepo.list({
       search: search,
@@ -61,10 +64,14 @@ export const createMemberHandler = async (
     const memberData: IMemberBase = request.body;
     const result = await memberRepo.create(memberData);
 
-    response.status(201).json({ message: 'Member Created', result });
+    response
+      .status(201)
+      .json({ message: 'Member created successfully.', result });
   } catch (error) {
     console.error('Error creating member:', error);
-    response.status(500).json({ error: 'Internal Server Error' });
+    response
+      .status(500)
+      .json({ error: 'Failed to create member. Please try again later.' });
   }
 };
 
@@ -81,13 +88,15 @@ export const updateMemberHandler = async (
     const memberData: IMemberBase = request.body;
     const result = await memberRepo.update(memberId, memberData);
     if (result) {
-      response.status(200).json({ message: 'Member Updated' });
+      response.status(200).json({ message: 'Member updated successfully.' });
     } else {
       response.status(404).json({ error: 'Member not found' });
     }
   } catch (error) {
     console.error('Error updating member:', error);
-    response.status(500).json({ error: 'Internal Server Error' });
+    response
+      .status(500)
+      .json({ error: 'Failed to update member. Please try again later.' });
   }
 };
 
@@ -103,12 +112,14 @@ export const deleteMemberHandler = async (
   try {
     const result = await memberRepo.delete(memberId);
     if (result) {
-      response.status(200).json({ message: 'Member Deleted' });
+      response.status(200).json({ message: 'Member deleted successfully.' });
     } else {
       response.status(404).json({ error: 'Member not found' });
     }
   } catch (error) {
     console.error('Error deleting member:', error);
-    response.status(500).json({ error: 'Internal Server Error' });
+    response
+      .status(500)
+      .json({ error: 'Failed to delete member. Please try again later.' });
   }
 };

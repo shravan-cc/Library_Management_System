@@ -11,7 +11,9 @@ const memberRepo = new MemberRepository(db);
 export const handleLogout = async (req: Request, res: Response) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) {
-    return res.sendStatus(204);
+    return res
+      .sendStatus(204)
+      .json({ error: 'Authentication token is missing. Please log in.' });
   }
   const refreshToken = cookies.jwt;
 

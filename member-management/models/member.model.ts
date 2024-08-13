@@ -44,6 +44,7 @@ export const memberBaseSchema = z.object({
     .max(255, { message: 'Email must be no longer than 255 characters' }),
 
   password: z.string(),
+  role: z.string(),
 });
 
 export const memberSchema = memberBaseSchema.extend({

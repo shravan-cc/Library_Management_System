@@ -13,24 +13,26 @@ const memberRepo = new MemberRepository(db);
 
 export const handleRefreshToken = async (req: Request, res: Response) => {
   const cookies = req.cookies;
-  if (!cookies?.jwt) return res.sendStatus(401);
+  if (!cookies?.jwt)
+    return res.sendStatus(401).json({ error: 'Missing authentication token.' });
   const refreshToken = cookies.jwt;
 
   try {
     const foundUser = await memberRepo.getByRefreshToken(refreshToken);
 
-    if (!foundUser) return res.sendStatus(403);
+    if (!foundUser)
+      return res.sendStatus(403).json({ error: 'Invalid refresh token.' });
 
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET as string,
-      (err:any, decoded:any) => {
+      (err: any, decoded: any) => {
         if (err || foundUser.email !== (decoded as any).email)
           return res.sendStatus(403);
         const accessToken = jwt.sign(
           { id: foundUser.id, email: foundUser.email },
           process.env.ACCESS_TOKEN_SECRET!,
-          { expiresIn: '30s' }
+          { expiresIn: '3000s' }
         );
 
         res.json({ accessToken });

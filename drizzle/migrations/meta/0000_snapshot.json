@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4d223fc9-5c11-4733-84e8-7d634cecf63f",
+  "id": "ace65f99-e363-4b67-a0f0-2e1512733721",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "books": {
@@ -147,6 +147,13 @@
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         }
       },

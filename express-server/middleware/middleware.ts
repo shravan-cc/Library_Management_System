@@ -53,3 +53,42 @@ export const validateMemberDataMiddleware = (
   next();
 };
 
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.user);
+    console.log(req.user.role);
+    if (roles.includes(req.user!.role)) {
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  };
+};
+
+export const validateTransactionDataMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { bookId, status, returnDate } = req.body;
+  if (typeof bookId !== 'number' || isNaN(bookId)) {
+    return res.status(400).json({ error: 'Invalid or missing bookId' });
+  }
+
+  const validStatuses = ['Issued', 'Returned'];
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid or missing status' });
+  }
+
+  if (status === 'Returned') {
+    if (
+      !returnDate ||
+      typeof returnDate !== 'string' ||
+      !Date.parse(returnDate)
+    ) {
+      return res.status(400).json({ error: 'Invalid or missing returnDate' });
+    }
+  }
+
+  next();
+};

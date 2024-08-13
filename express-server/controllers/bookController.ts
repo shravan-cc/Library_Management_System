@@ -14,10 +14,11 @@ export const getBookByIdHandler = async (
   request: Request,
   response: Response
 ) => {
-
   const bookId = request.params.id;
   if (!bookId) {
-    return response.status(400).json({ error: 'Book ID is required' });
+    return response
+      .status(400)
+      .json({ error: 'Please provide a valid book ID.' });
   }
 
   try {
@@ -25,7 +26,11 @@ export const getBookByIdHandler = async (
     if (book) {
       response.status(200).json(book);
     } else {
-      response.status(404).json({ error: 'Book not found' });
+      response
+        .status(404)
+        .json({
+          error: "Sorry, we couldn't find the book you are looking for.",
+        });
     }
   } catch (error) {
     console.error('Error handling book request:', error);
@@ -50,7 +55,9 @@ export const listBooksHandler = async (
     if (books) {
       response.status(200).json(books);
     } else {
-      response.status(404).json({ error: 'Books not found' });
+      response
+        .status(404)
+        .json({ error: 'No books found matching your search criteria.' });
     }
   } catch (error) {
     console.error('Error handling book request:', error);
@@ -66,8 +73,11 @@ export const createBookHandler = async (
     const book: IBook = request.body;
     const result = await bookRepo.create(book);
 
-    response.status(201).json({ message: 'Book Created', result });
+    response
+      .status(201)
+      .json({ message: 'Book created successfully!', result });
   } catch (error) {
+    console.log('error');
     console.error('Error inserting book:', error);
     response.status(500).json({ error: 'Internal Server Error' });
   }
@@ -83,7 +93,7 @@ export const updateBookHandler = async (
     const book: IBook = request.body;
     const result = await bookRepo.update(bookId, book);
     if (result) {
-      response.status(200).json({ message: 'Book Updated' });
+      response.status(200).json({ message: 'Book updated successfully!' });
     } else {
       response.status(404).json({ error: 'Book not found' });
     }
@@ -102,9 +112,15 @@ export const deleteBookHandler = async (
   try {
     const result = await bookRepo.delete(bookId);
     if (result) {
-      response.status(200).json({ message: 'Book Deleted' });
+      response
+        .status(200)
+        .json({ message: 'Book deleted successfully!', result });
     } else {
-      response.status(404).json({ error: 'Book not found' });
+      response
+        .status(404)
+        .json({
+          error: "Sorry, we couldn't find the book you are trying to delete.",
+        });
     }
   } catch (error) {
     console.error('Error deleting book:', error);

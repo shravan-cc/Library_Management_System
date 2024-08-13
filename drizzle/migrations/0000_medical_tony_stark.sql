@@ -21,6 +21,7 @@ CREATE TABLE `members` (
 	`password` varchar(100) NOT NULL,
 	`email` varchar(100) NOT NULL,
 	`refreshToken` varchar(100),
+	`role` varchar(100) NOT NULL,
 	CONSTRAINT `members_id` PRIMARY KEY(`id`),
 	CONSTRAINT `members_phone_unique` UNIQUE(`phone`),
 	CONSTRAINT `members_email_unique` UNIQUE(`email`),

@@ -33,6 +33,7 @@ export const MemberTable = mysqlTable('members', {
   password: varchar('password', { length: 100 }).notNull(),
   email: varchar('email', { length: 100 }).unique().notNull(),
   refreshToken: varchar('refreshToken', { length: 100 }).unique(),
+  role: varchar('role', { length: 100 }).notNull(),
 });
 
 export const TransactionTable = mysqlTable('transactions', {
