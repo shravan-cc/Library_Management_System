@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { IBook } from '../../article-management/models/book.model';
 import { IMemberBase } from '../../member-management/models/member.model';
 import { ITransactionBase } from '../../transaction-management/models/transaction.model';
+import { request } from 'http';
 
 export const validateBookDataMiddleware = (
   request: Request,
@@ -19,8 +20,7 @@ export const validateBookDataMiddleware = (
         typeof data.genre === 'string' &&
         typeof data.isbnNo === 'string' &&
         typeof data.pages === 'number' &&
-        typeof data.totalCopies === 'number' &&
-        typeof data.availableCopies === 'number'
+        typeof data.totalCopies === 'number'
       );
     };
 
@@ -38,12 +38,13 @@ export const validateMemberDataMiddleware = (
 ) => {
   if (request.method === 'POST' || request.method === 'PATCH') {
     const body = request.body;
-    const isValidMember = (data: any): data is IMemberBase => {
+    const isValidMember = (data: IMemberBase): data is IMemberBase => {
       return (
         typeof data.firstName === 'string' &&
         typeof data.lastName === 'string' &&
         typeof data.phone === 'number' &&
-        typeof data.address === 'string'
+        typeof data.address === 'string' &&
+        (data.role === 'admin' || data.role === 'user')
       );
     };
 
@@ -75,6 +76,18 @@ export const validateTransactionDataMiddleware = (
         .status(400)
         .json({ error: 'Invalid transaction data format' });
     }
+  }
+  next();
+};
+
+export const verifyAdminMiddleware = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  const user = request.user;
+  if (user.role !== 'admin') {
+    return response.status(400).json({ error: 'Only admin can access' });
   }
   next();
 };

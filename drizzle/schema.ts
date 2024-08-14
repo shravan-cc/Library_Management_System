@@ -30,6 +30,7 @@ export const MemberTable = mysqlTable('members', {
   lastName: varchar('lastName', { length: 50 }).notNull(),
   phone: bigint('phone', { mode: 'number' }).unique().notNull(),
   address: varchar('address', { length: 100 }).notNull(),
+  role: varchar('role', { length: 100 }).notNull(),
   password: varchar('password', { length: 100 }).notNull(),
   email: varchar('email', { length: 100 }).unique().notNull(),
   refreshToken: varchar('refreshToken', { length: 100 }).unique(),

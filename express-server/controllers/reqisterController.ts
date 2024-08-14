@@ -12,8 +12,9 @@ export const db: MySql2Database<Record<string, never>> = drizzle(pool);
 const memberRepo = new MemberRepository(db);
 
 export const handleRegister = async (req: Request, res: Response) => {
-  const { firstName, lastName, phone, address, email, password } = req.body;
-
+  const { firstName, lastName, phone, address, email, password, role } =
+    req.body;
+  console.log(req.body);
   if (!firstName || !lastName || !phone || !address || !email || !password) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
@@ -31,10 +32,11 @@ export const handleRegister = async (req: Request, res: Response) => {
       lastName,
       phone,
       address,
+      role,
       email,
       password: hashedPwd,
     };
-      
+
     const createdUser = await memberRepo.create(newUser);
 
     res

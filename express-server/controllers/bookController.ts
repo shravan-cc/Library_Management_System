@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { BookRepository } from '../../article-management/book.repository';
-import { IBook } from '../../article-management/models/book.model';
+import { IBook, IBookBase } from '../../article-management/models/book.model';
 import mysql from 'mysql2/promise';
 import { drizzle, MySql2Database } from 'drizzle-orm/mysql2';
 import { AppEnvs } from '../../read-env';
@@ -14,7 +14,6 @@ export const getBookByIdHandler = async (
   request: Request,
   response: Response
 ) => {
-
   const bookId = request.params.id;
   if (!bookId) {
     return response.status(400).json({ error: 'Book ID is required' });
@@ -63,7 +62,7 @@ export const createBookHandler = async (
   response: Response
 ) => {
   try {
-    const book: IBook = request.body;
+    const book: IBookBase = request.body;
     const result = await bookRepo.create(book);
 
     response.status(201).json({ message: 'Book Created', result });

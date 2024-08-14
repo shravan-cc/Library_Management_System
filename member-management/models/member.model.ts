@@ -36,6 +36,7 @@ export const memberBaseSchema = z.object({
     .string()
     .trim()
     .min(5, 'Address must be at least 5 characters long'),
+  role: z.string(),
   email: z
     .string()
     .trim()

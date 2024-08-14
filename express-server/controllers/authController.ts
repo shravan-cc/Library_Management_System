@@ -29,12 +29,12 @@ export const handleLogin = async (req: Request, res: Response) => {
 
     if (match) {
       const accessToken = jwt.sign(
-        { id: foundUser.id, email: foundUser.email },
+        { id: foundUser.id, email: foundUser.email, role: foundUser.role },
         process.env.ACCESS_TOKEN_SECRET!,
         { expiresIn: '30s' }
       );
       const refreshToken = jwt.sign(
-        { id: foundUser.id, email: foundUser.email },
+        { id: foundUser.id, email: foundUser.email, role: foundUser.role },
         process.env.REFRESH_TOKEN_SECRET!,
         { expiresIn: '1d' }
       );
