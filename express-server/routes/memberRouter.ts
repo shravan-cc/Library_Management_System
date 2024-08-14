@@ -6,6 +6,7 @@ import {
   updateMemberHandler,
   deleteMemberHandler,
 } from '../controllers/memberController';
+
 import { handleRegister } from '../controllers/registerController';
 import { handleLogin } from '../controllers/authController';
 import { authorizeRoles, validateMemberDataMiddleware } from '../middleware/middleware';

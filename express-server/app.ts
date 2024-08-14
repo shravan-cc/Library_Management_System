@@ -3,6 +3,7 @@ import bookRouter from './routes/bookRouter';
 import { memberRouter } from './routes/memberRouter';
 import cookieParser from 'cookie-parser';
 import { verifyJWT } from './middleware/verifyJWT';
+import transactionRouter from './routes/transactionRouter';
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.use(cookieParser());
 app.use('/books', verifyJWT, bookRouter);
 
 app.use('/members', memberRouter);
+
+app.use('/transactions', transactionRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { IBook } from '../../article-management/models/book.model';
 import { IMemberBase } from '../../member-management/models/member.model';
+import { ITransactionBase } from '../../transaction-management/models/transaction.model';
 
 export const validateBookDataMiddleware = (
   request: Request,
@@ -89,6 +90,5 @@ export const validateTransactionDataMiddleware = (
       return res.status(400).json({ error: 'Invalid or missing returnDate' });
     }
   }
-
   next();
 };
