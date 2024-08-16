@@ -5,12 +5,15 @@ import {
   issueBookHandler,
   returnBookHandler,
 } from '../controllers/transactionController';
-import { validateTransactionDataMiddleware } from '../middleware/middleware';
+import {
+  validateTransactionDataMiddleware,
+  verifyAdminMiddleware,
+} from '../middleware/middleware';
 
 const transactionRouter = express.Router();
 
-transactionRouter.get('/', listTransactionsHandler);
-transactionRouter.get('/:id', getTransactionByIdHandler);
+transactionRouter.get('/', verifyAdminMiddleware, listTransactionsHandler);
+transactionRouter.get('/:id', verifyAdminMiddleware, getTransactionByIdHandler);
 transactionRouter.post(
   '/',
   validateTransactionDataMiddleware,

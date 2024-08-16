@@ -23,7 +23,7 @@ export const handleLogin = async (req: Request, res: Response) => {
     const foundUser = await memberRepo.getByEmail(email);
 
     if (!foundUser) {
-      return res.sendStatus(401);
+      return res.sendStatus(404);
     }
     const match = await bcrypt.compare(password, foundUser.password);
 
@@ -31,7 +31,7 @@ export const handleLogin = async (req: Request, res: Response) => {
       const accessToken = jwt.sign(
         { id: foundUser.id, email: foundUser.email, role: foundUser.role },
         process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: '30s' }
+        { expiresIn: '3000s' }
       );
       const refreshToken = jwt.sign(
         { id: foundUser.id, email: foundUser.email, role: foundUser.role },
