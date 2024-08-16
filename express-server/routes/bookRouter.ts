@@ -6,14 +6,27 @@ import {
   updateBookHandler,
   deleteBookHandler,
 } from '../controllers/bookController';
-import { validateBookDataMiddleware } from '../middleware/middleware';
+import {
+  validateBookDataMiddleware,
+  verifyAdminMiddleware,
+} from '../middleware/middleware';
 
 const bookRouter = express.Router();
 
 bookRouter.get('/', listBooksHandler);
 bookRouter.get('/:id', getBookByIdHandler);
-bookRouter.post('/', validateBookDataMiddleware, createBookHandler);
-bookRouter.patch('/:id', validateBookDataMiddleware, updateBookHandler);
-bookRouter.delete('/:id', deleteBookHandler);
+bookRouter.post(
+  '/',
+  verifyAdminMiddleware,
+  validateBookDataMiddleware,
+  createBookHandler
+);
+bookRouter.patch(
+  '/:id',
+  verifyAdminMiddleware,
+  validateBookDataMiddleware,
+  updateBookHandler
+);
+bookRouter.delete('/:id', verifyAdminMiddleware, deleteBookHandler);
 
 export default bookRouter;

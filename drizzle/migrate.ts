@@ -13,7 +13,7 @@ async function initializeDb() {
   //   Perform migrations
   await migrate(drizzle(migrationClient), {
     migrationsFolder:
-      '/home/preethesh/assignment-repo/Library_Management_System_Project/Library_Management_System/drizzle/migrations', // Adjust this path to your migrations folder
+      '/mnt/c/Users/shravantr/Documents/assignmentprime/Library_Management/Library_Management_System/drizzle/migrations', // Adjust this path to your migrations folder
   });
   await migrationClient.end();
 }

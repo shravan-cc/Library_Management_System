@@ -11,7 +11,7 @@ const memberRepo = new MemberRepository(db);
 export const handleLogout = async (req: Request, res: Response) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) {
-    return res.sendStatus(204);
+    return res.status(200).json({ message: 'Already logged out' });
   }
   const refreshToken = cookies.jwt;
 

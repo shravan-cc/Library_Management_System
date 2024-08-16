@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import { TransactionRepository } from '../../transaction-management/transaction.repository';
-import { ITransaction } from '../../transaction-management/models/transaction.model';
+import {
+  ITransaction,
+  ITransactionBase,
+} from '../../transaction-management/models/transaction.model';
 import mysql from 'mysql2/promise';
 import { drizzle, MySql2Database } from 'drizzle-orm/mysql2';
 import { AppEnvs } from '../../read-env';
+import { error } from 'console';
 
 export const pool = mysql.createPool(AppEnvs.DATABASE_URL);
 export const db: MySql2Database<Record<string, never>> = drizzle(pool);
@@ -62,7 +66,7 @@ export const issueBookHandler = async (
   response: Response
 ) => {
   try {
-    const transaction: ITransaction = request.body;
+    const transaction: ITransactionBase = request.body;
     const result = await transactionRepo.create(transaction);
 
     response.status(201).json({ message: 'Book issued successfully', result });
@@ -79,7 +83,14 @@ export const returnBookHandler = async (
   const transactionId = Number(request.params.id);
 
   try {
-    const returnDate: string = request.body;
+    const foundTransaction = await transactionRepo.getById(transactionId);
+    if (foundTransaction?.status === 'Returned') {
+      return response
+        .status(400)
+        .json({ error: 'Book has already been returned' });
+    }
+
+    const { returnDate } = request.body;
     const result = await transactionRepo.update(transactionId, returnDate);
     if (result) {
       response.status(200).json({ message: 'Book returned' });

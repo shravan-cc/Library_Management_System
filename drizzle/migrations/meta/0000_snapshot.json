@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4d223fc9-5c11-4733-84e8-7d634cecf63f",
+  "id": "9353c3c8-5551-4d5a-ad02-edb397e74b46",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "books": {

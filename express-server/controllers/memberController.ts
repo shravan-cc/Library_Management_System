@@ -77,7 +77,11 @@ export const updateMemberHandler = async (
     return response.status(400).json({ error: 'Invalid Member ID' });
   }
 
+  const userId = request.user.id;
   try {
+    if (userId !== memberId) {
+      response.status(403).json({ message: 'You are not authorized' });
+    }
     const memberData: IMemberBase = request.body;
     const result = await memberRepo.update(memberId, memberData);
     if (result) {
@@ -97,10 +101,16 @@ export const deleteMemberHandler = async (
 ) => {
   const memberId = Number(request.params.id);
   if (isNaN(memberId)) {
-    return response.status(400).json({ error: 'Invalid Member ID' });
+    return response.status(403).json({ error: 'Invalid Member ID' });
   }
 
+  const userId = request.user.id;
+
   try {
+    if (userId !== memberId && request.user.role !== 'admin') {
+      response.status(400).json({ message: 'You are not authorized' });
+    }
+
     const result = await memberRepo.delete(memberId);
     if (result) {
       response.status(200).json({ message: 'Member Deleted' });
